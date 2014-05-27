@@ -15,8 +15,7 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 		int[] start = new int[]{0,0,2,1,2,1,2};
 		//questionOneBFS(start);
 		//questionOneDFS(start);
-		//questionOneHillClimb(start);
-		//questionOneBestFirstSearch(start);
+		questionOneHillClimb(start);
 	}
 	
 	/**
@@ -40,27 +39,6 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 				hillclimb.push(c);
 			}
 			
-		}
-		
-	}
-	
-	private static void questionOneBestFirstSearch(int[] start) {
-		Stack<int[]> bestfirst = new Stack<int[]>();
-		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
-		int[] current = start;
-		int i = 0;
-		
-		validCheck.put(Arrays.toString(start), true);	
-		bestfirst.push(start);
-		while(bestfirst.size() > 0 && !Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
-			current = bestfirst.pop();
-			System.out.println(" Node: " + i + " " + Arrays.toString(current));
-			i++;
-			ArrayList<int[]> children = generateChildren(validCheck, current);
-			for(int[] c :  children){
-				bestfirst.push(c);
-			}
-			Collections.sort(bestfirst, new HillClimbingHeuristic());
 		}
 		
 	}

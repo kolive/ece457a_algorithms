@@ -14,7 +14,7 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 		 */
 		int[] start = new int[]{0,0,2,1,2,1,2};
 		//questionOneBFS(start);
-		//questionOneDFS(start);
+		questionOneDFS(start);
 		//questionOneHillClimb(start);
 		//questionOneBestFirstSearch(start);
 	}

@@ -16,7 +16,7 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 		//questionOneBFS(start);
 		//questionOneDFS(start);
 		//questionOneHillClimb(start);
-		//questionOneBestFirstSearch(start);
+		questionOneBestFirstSearch(start);
 	}
 	
 	/**
@@ -51,7 +51,7 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 		int i = 0;
 		
 		validCheck.put(Arrays.toString(start), true);	
-		bestfirst.push(start);
+		hillclimb.push(start);
 		while(bestfirst.size() > 0 && !Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
 			current = bestfirst.pop();
 			System.out.println(" Node: " + i + " " + Arrays.toString(current));

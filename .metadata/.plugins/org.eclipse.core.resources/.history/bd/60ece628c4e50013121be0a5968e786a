@@ -16,7 +16,7 @@ adjacent coins to free squares (the coins may not be separated or rotated)
 		//questionOneBFS(start);
 		//questionOneDFS(start);
 		//questionOneHillClimb(start);
-		//questionOneBestFirstSearch(start);
+		questionOneBestFirstSearch(start);
 	}
 	
 	/**
