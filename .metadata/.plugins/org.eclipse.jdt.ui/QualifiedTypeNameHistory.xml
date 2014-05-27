@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="java.lang.Integer"/>
+<fullyQualifiedTypeName name="java.util.Random"/>
+<fullyQualifiedTypeName name="ece351.common.ast.OrExpr"/>
+<fullyQualifiedTypeName name="ece351.f.DetermineInputVars"/>
+<fullyQualifiedTypeName name="kodkod.ast.Formula"/>
+<fullyQualifiedTypeName name="ece351.vhdl.VBase"/>
+<fullyQualifiedTypeName name="org.parboiled.common.ImmutableList"/>
+</qualifiedTypeNameHistroy>

@@ -1,0 +1,287 @@
+package ece351.vhdl;
+
+import org.parboiled.Rule;
+
+import ece351.util.CommandLine;
+import ece351.w.ast.WProgram;
+
+//Parboiled requires that this class not be final
+public /*final*/ class VRecognizer extends VBase {
+
+	public static void main(final String arg) {
+		main(new String[]{arg});
+	}
+	
+	public static void main(final String[] args) {
+		final CommandLine c = new CommandLine(args);
+    	process(VRecognizer.class, c.readInputSpec());
+    }
+
+    public Rule Program() {
+    	// TODO: Write a recognizer that accepts grammatical VHDL inputs
+    	// For the grammar production Id, ensure that the Id does not match any of the keywords specified
+    	// in the rule, 'Keyword'
+// TODO: 165 lines snipped
+    	return Sequence(
+				ZeroOrMore(Sequence(
+	    					W0(),
+	    					DesignUnit())),
+				EOI);
+    }
+    
+    Rule DesignUnit(){
+    	return Sequence(
+    			EntityDecl(),
+    			W(),
+    			ArchBody());
+    }
+    
+    Rule EntityDecl(){
+    	return Sequence(
+    				ENTITY(),
+    				W(),
+    				Id(),
+    				W(),
+    				IS(),
+    				W(),
+    				PORT(),
+    				W0(),
+    				'(',
+    				W0(),
+    				IdList(),
+    				W0(),
+    				':',
+    				W0(),
+    				IN(),
+    				W(),
+    				BIT(),
+    				W0(),
+    				';',
+    				W0(),
+    				IdList(),
+    				W0(),
+    				':',
+    				W0(),
+    				OUT(),
+    				W(),
+    				BIT(),
+    				W0(),
+    				')',
+    				W0(),
+    				';',
+    				W0(),
+    				END(),
+    				W0(),
+    				FirstOf( ENTITY(), Sequence(Id(), W0(), ';') )
+    			);
+    
+    }
+    
+    Rule ArchBody(){
+    	return Sequence(
+    				ARCHITECTURE(),
+    				W(),
+    				Id(),
+    				W(),
+    				OF(),
+    				W(),
+    				Id(),
+    				W(),
+    				IS(),
+    				W(),
+    				Optional(
+    					Sequence(
+    						SIGNAL(),
+    						W(),
+    						IdList(),
+    						W0(),
+    						':',
+    						W0(),
+    						BIT(),
+    						W0(),
+    						';',
+    						W0()
+    					)
+    				),
+    				BEGIN(),
+    				W(),
+    				ZeroOrMore(CompInst()),
+    				W0(),
+    				FirstOf( ProcessStmts(), SigAssnStmts() ),
+    				W0(),
+    				END(),
+    				W(),
+    				Id(),
+    				W0(),
+    				';',
+    				W0()
+    			);
+    }
+    
+    Rule IdList(){
+    	return Sequence(
+    			Id(),
+    			ZeroOrMore(Sequence(W0(), ',', W0(), Id())));
+    }
+    
+    Rule SigAssnStmts(){
+    	return OneOrMore(Sequence(SigAssnStmt(), W0()));
+    }
+    
+    Rule SigAssnStmt(){
+    	return Sequence(
+    			Id(),
+    			W0(),
+    			"<=",
+    			W0(),
+    			Expr(),
+    			';');
+    }
+    
+    Rule ProcessStmts(){
+    	return OneOrMore(Sequence(ProcessStmt(), W0()));
+    }
+    
+    Rule ProcessStmt(){
+    	return Sequence(
+    			PROCESS(),
+    			W0(),
+    			'(',
+    			W0(),
+    			IdList(),
+    			W0(),
+    			')',
+    			W0(),
+    			BEGIN(),
+    			W(),
+    			FirstOf( IfElseStmts(), SigAssnStmts() ),
+    			W0(),
+    			ENDPROCESS(),
+    			AnyOf("; \t\n\r\f"),
+    			W0()
+    			);
+    }
+    
+    Rule IfElseStmts(){
+    	return OneOrMore(Sequence(IfElseStmt(),W0()));
+    }
+    
+    Rule IfElseStmt(){
+    	return Sequence(
+    				IF(),
+    				W0(),
+    				Expr(),
+    				W0(),
+    				THEN(),
+    				W(),
+    				SigAssnStmts(),
+    				W0(),
+    				ELSE(),
+    				W(),
+    				SigAssnStmts(),
+    				W0(),
+    				END(),
+    				W0(),
+    				IgnoreCase("if"),
+    				Optional(Sequence(W(),Id(),W0())),
+    				';',
+        			AnyOf(" \t\n\r\f"),
+    				W0()
+    			);
+    }
+    
+    Rule CompInst(){
+    	return Sequence(
+    				Id(),
+    				W0(),
+    				':',
+    				W0(),
+    				ENTITY(),
+    				W(),
+    				IgnoreCase("work."),
+    				Id(),
+    				W(),
+    				PORT(),
+    				W0(),
+    				MAP(),
+    				W0(),
+    				'(',
+    				W0(),
+    				IdList(),
+    				W0(),
+    				')',
+    				W0(),
+    				';',
+    				W0()
+    			);
+    }
+    
+    Rule Expr(){
+    	return Sequence(
+    				Relation(),
+    				ZeroOrMore(Sequence(W0(), LogicOp(), W(), Relation())),
+    				W0()
+    			);
+    }
+    
+    Rule Relation(){
+    	return Sequence(
+    				Factor(),
+    				Optional(Sequence(W0(), RelOp(), W0(), Factor())),
+    				W0()
+    			);
+    }
+    
+    Rule Factor(){
+    	return Sequence( 
+    			Optional(Sequence(IgnoreCase("not"), W0())),
+    			W0(),
+    			Literal(),
+    			W0());
+    }
+    
+    Rule Literal(){
+    	return FirstOf(
+    				Id(),
+    				Sequence('\'', Constant(), '\''),
+    				Sequence('(', Expr(), ')')
+    			);
+    }
+    
+    Rule LogicOp(){
+    	return FirstOf(
+    			AND(),
+    			OR(),
+    			XOR(),
+    			NAND(),
+    			NOR(),
+    			XNOR());
+    }
+    
+    Rule RelOp(){
+    	return Ch('=');
+    }
+    
+    Rule Constant(){
+    	return FirstOf(
+    			Sequence(W0(), "0", W0()),
+    			Sequence(W0(), "1", W0()));
+    }
+    
+    Rule Id(){
+    	return Sequence(
+				TestNot(Keyword()),
+				OneOrMore(Char()),
+				ZeroOrMore(
+					FirstOf(
+						Char(),
+						Digit(),
+						'_'
+						)
+					)
+				);
+    }
+    
+    
+    
+}

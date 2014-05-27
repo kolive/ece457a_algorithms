@@ -1,0 +1,74 @@
+package ece351.w.rdescent;
+
+import ece351.util.Lexer;
+
+public final class WRecursiveDescentRecognizer {
+    private final Lexer lexer;
+
+    public WRecursiveDescentRecognizer(final Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public static void recognize(final String input) {
+    	final WRecursiveDescentRecognizer r = new WRecursiveDescentRecognizer(new Lexer(input));
+        r.recognize();
+    }
+
+    /**
+     * Throws an exception to reject.
+     */
+    public void recognize() {
+        program();
+    }
+
+    public void program() {
+    	
+    	//begin traversal
+        while (!lexer.inspectEOF()) {
+            waveform();
+        }
+        lexer.consumeEOF();
+    }
+
+    public void waveform() {
+    	//check for valid ID
+    	if( !lexer.consumeID().matches("[a-xA-Z]+")){
+			return;
+		}
+		//look for :
+		if(!lexer.inspect(":")){
+			return;
+		}else{
+			lexer.consume(":");
+			//check bitset
+			if (!bits()) return;
+		}
+		
+		//make sure it's terminated by a ";"
+    	if(!lexer.inspect(";")){
+    		return;
+    	}else{
+    		lexer.consume(";");
+    	}
+		
+		return;
+    	
+    }
+    
+    public boolean bits(){
+    	
+    	//must have at least one bit
+    	//check for invalid characters
+    	if(!lexer.inspect("0") && !lexer.inspect("1")) {
+    		return false;
+    	}
+    	
+    	while(lexer.inspect("0") || lexer.inspect("1")){        	
+    		if(lexer.inspect("0")) lexer.consume("0");
+    		if(lexer.inspect("1")) lexer.consume("1");
+    	}
+    	
+    	
+    	return true;
+    }
+}

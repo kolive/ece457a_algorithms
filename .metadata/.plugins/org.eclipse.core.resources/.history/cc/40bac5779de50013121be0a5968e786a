@@ -1,0 +1,227 @@
+ 
+
+All Gists
+kolive
+ 
+ Edit  
+Delete
+ 
+Star0
+SECRET
+ kolive / Assignment1.java
+Last active 15 hours ago
+
+Gist Detail
+Revisions 5
+Download Gist
+Clone this gist
+
+Embed this gist
+
+Link to this gist
+
+ Assignment1.java Raw
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+package ece457a_assignment1;
+ 
+import java.util.*;
+ 
+public class Assignment1 {
+	
+	public static void main(String args[]){
+		int[] start = new int[]{0,0,2,1,2,1,2};
+		//questionOneBFS(start);
+		questionOneDFS(start);
+	}
+	
+	public static void questionOneBFS(int[] state){		
+		Queue<int[]> bfs = new LinkedList<int[]>();
+		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
+		validCheck.put(Arrays.toString(state), true);
+		int[] current = state;
+		int[] countToNextLevel = new int[100];
+		countToNextLevel[0] = 1;
+		int i = 0;
+		while(!Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
+			
+			System.out.println("Level: " + i + " Node: " + Arrays.toString(current));
+			
+			ArrayList<int[]> children = generateChildren(validCheck, current);
+			countToNextLevel[i+1] += children.size();
+			for(int[] c :  children){
+				bfs.add(c);
+			}
+			
+			current = bfs.poll();
+			countToNextLevel[i]--;
+			if(countToNextLevel[i] == 0){
+				i++;
+			}
+		}
+		System.out.println("Level: " + i + " Node: " + Arrays.toString(current));
+	}
+	
+	public static void questionOneDFS(int[] state){		
+		Stack<int[]> dfs = new Stack<int[]>();
+		Stack<Integer> currentDepth = new Stack<Integer>();
+		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
+		int[] current = state;
+		int n = 0;
+		int i = 0;
+		
+		validCheck.put(Arrays.toString(state), true);	
+		dfs.push(state);
+		currentDepth.push(0);
+		while(dfs.size() > 0 && !Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
+			
+			current = dfs.pop();
+			n = currentDepth.pop();
+			
+			System.out.println("Depth: " + n + " Node: " + Arrays.toString(current));
+			
+			ArrayList<int[]> children = generateChildren(validCheck, current);
+			for(int[] c :  children){
+				if(n!=3){
+					dfs.push(c);
+					currentDepth.push(n+1);
+				}
+			}
+			
+		}
+		
+	}
+ 
+	//move zeros right
+	private static ArrayList<int[]> generateChildren(HashMap<String, Boolean> validCheck, int[] state) {
+		int[] newState = state.clone();
+		ArrayList<int[]> children = new ArrayList<int[]>();
+		
+		//get location of zeros
+		int x = -1;
+		int y = -1;
+		for(int i = 0; i < 6; i++){
+			if(state[i] == 0 && state[i+1] == 0){
+				x = i;
+				y = i+1;
+			}
+		}
+		
+		for(int i = 0; i < 6; i++){ 
+			if(state[i] != 0 && state[i+1] != 0){	
+				newState[x] = newState[i];
+				newState[y] = newState[i+1];
+				newState[i] = 0;
+				newState[i+1] = 0;
+				if(!validCheck.containsKey(Arrays.toString(newState))){
+					children.add(newState);
+					validCheck.put(Arrays.toString(newState), true);
+				}
+				newState = state.clone();
+			}
+		}
+		
+		return children;
+	}
+ 
+}

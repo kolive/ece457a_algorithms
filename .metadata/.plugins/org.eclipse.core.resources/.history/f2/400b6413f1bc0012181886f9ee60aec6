@@ -1,0 +1,90 @@
+package ece351.w.rdescent;
+
+import org.parboiled.common.ImmutableList;
+
+import ece351.util.Lexer;
+import ece351.w.ast.WProgram;
+import ece351.w.ast.Waveform;
+
+public final class WRecursiveDescentParser {
+    private final Lexer lexer;
+
+    public WRecursiveDescentParser(final Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public static WProgram parse(final String input) {
+    	final WRecursiveDescentParser p = new WRecursiveDescentParser(new Lexer(input));
+        return p.parse();
+    }
+
+    public WProgram parse() {
+    	WProgram wProgram = new WProgram();
+    	return program(wProgram);
+    	
+    }
+    
+    public WProgram program(WProgram pProgram) {
+    	
+    	//begin traversal
+    	//make sure the file is not empty
+    	if(lexer.inspectEOF()){
+    		throw new RuntimeException("Null W file");
+		}
+        while (!lexer.inspectEOF()) {
+        	pProgram = pProgram.append(waveform());
+        }
+        lexer.consumeEOF();
+        
+        return pProgram;
+    }
+
+    public Waveform waveform() {
+    	Waveform current; 
+    	String id;
+    	//check for valid ID
+    	if(!lexer.inspectID()){
+    		throw new RuntimeException("ID is missing");
+		}else{
+			id = lexer.consumeID();
+			if(!id.matches("[a-zA-Z]+")){
+				throw new RuntimeException("ID is malformed");
+			}
+			current = new Waveform(id);
+		}
+		//look for :
+		if(!lexer.inspect(":")){
+			throw new RuntimeException("ID is not followed by a :");
+		}else{
+			lexer.consume(":");
+			//check bitset
+			current = bits(current);
+			if (current.bits.size() <= 0) throw new RuntimeException("Bitset error");		
+		}
+		//make sure it's terminated by a ";"
+    	if(!lexer.inspect(";")){
+    		throw new RuntimeException("Waveform not terminated by a ;");
+    	}else{
+    		lexer.consume(";");
+    	}
+		return current;
+    	
+    }
+    
+    public Waveform bits(Waveform pWaveform){
+    	
+    	//must have at least one bit
+    	//check for invalid characters
+    	if(!lexer.inspect("0") && !lexer.inspect("1")) {
+    		return pWaveform;
+    	}
+    	
+    	while(lexer.inspect("0") || lexer.inspect("1")){        	
+    		if(lexer.inspect("0")) pWaveform = pWaveform.append(lexer.consume("0"));
+    		if(lexer.inspect("1")) pWaveform = pWaveform.append(lexer.consume("1"));
+    	}
+    	
+    	
+    	return pWaveform;
+    }
+}

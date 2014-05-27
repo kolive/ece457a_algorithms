@@ -1,0 +1,140 @@
+package ece351.f.rdescent;
+import org.parboiled.common.ImmutableList;
+
+import ece351.common.ast.AndExpr;
+import ece351.common.ast.AssignmentStatement;
+import ece351.common.ast.ConstantExpr;
+import ece351.common.ast.Expr;
+import ece351.common.ast.NotExpr;
+import ece351.common.ast.OrExpr;
+import ece351.common.ast.VarExpr;
+import ece351.f.ast.FProgram;
+import ece351.util.CommandLine;
+import ece351.util.Lexer;
+import ece351.util.Todo351Exception;
+import ece351.vhdl.VConstants;
+
+
+
+public final class FRecursiveDescentParser implements VConstants {
+   
+	// instance variables
+	private final Lexer lexer;
+
+    public FRecursiveDescentParser(String... args) {
+    	final CommandLine c = new CommandLine(args);
+        lexer = new Lexer(c.readInputSpec());
+    }
+    
+    public FRecursiveDescentParser(final Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public static void main(final String arg) {
+    	main(new String[]{arg});
+    }
+    
+    public static void main(final String[] args) {
+    	parse(args);
+    }
+
+    public static FProgram parse(final String... args) {
+        final FRecursiveDescentParser p = new FRecursiveDescentParser(args);
+        return p.parse();
+    }
+    
+    public FProgram parse() {
+        return program();
+    }
+
+    FProgram program() {
+    	FProgram fp = new FProgram();
+        while (!lexer.inspectEOF()) {
+        	fp = fp.append(formula());
+        }
+        lexer.consumeEOF();
+        assert fp.repOk();
+        return fp;
+    }
+
+    AssignmentStatement formula() {
+        final VarExpr var = var();
+        lexer.consume("<=");
+        final Expr expr = expr();
+        lexer.consume(";");
+        return new AssignmentStatement(var, expr);
+    }
+    
+    Expr expr() { 
+    	Expr left = term();
+    	Expr right = null;
+    	
+    	while(lexer.inspect(OR)){
+    		lexer.consume(OR);
+    		left = new OrExpr(left, term());
+    	}
+    	
+    	return left;
+    	
+    } 
+    
+    Expr term() { 
+    	Expr left = factor();
+    	Expr right = null;
+    	
+    	while(lexer.inspect(AND)){
+    		lexer.consume(AND);
+    		left = new AndExpr(left, factor());
+    	}
+    	
+    	return left;
+    	
+    } 
+    
+    Expr factor() { 
+    	if(lexer.inspect(NOT)){
+			lexer.consume(NOT);
+			return new NotExpr(factor());			
+		}else if(lexer.inspect("(")){
+			lexer.consume("(");
+			Expr exp = expr();
+			if(lexer.inspect(")")){
+				lexer.consume(")"); 
+				return exp;
+			}else{
+				throw new RuntimeException("Syntax Error: Missing End Parentheses");
+			}
+		}else if(peekConstant()){
+			return constant();
+		}else{
+			//if the next thing is not a constant, it must be a var
+			return var();
+		}
+    } 
+    VarExpr var() {
+    	if(!lexer.inspectID()){
+			throw new RuntimeException( "Syntax Error: Missing or Invalid ID ");
+		}
+		return new VarExpr(lexer.consumeID());
+    }
+    ConstantExpr constant() { 
+    	lexer.consume("'");
+		if(lexer.inspect("0")){
+			lexer.consume("0");
+			lexer.consume("'");
+			return ConstantExpr.FalseExpr;
+		}else if(lexer.inspect("1")){
+			lexer.consume("1");
+			lexer.consume("'");
+			return ConstantExpr.TrueExpr;
+		}else{
+			throw new RuntimeException( "Syntax Error: Expecting Constant");
+		}	
+    } 
+    // helper functions
+    private boolean peekConstant() {
+        return lexer.inspect("'");
+    }
+
+}
+

@@ -1,0 +1,77 @@
+package ece351.w.rdescent;
+
+import ece351.util.Lexer;
+
+public final class WRecursiveDescentRecognizer {
+    private final Lexer lexer;
+
+    public WRecursiveDescentRecognizer(final Lexer lexer) {
+        this.lexer = lexer;
+    }
+
+    public static void recognize(final String input) {
+    	final WRecursiveDescentRecognizer r = new WRecursiveDescentRecognizer(new Lexer(input));
+        r.recognize();
+    }
+
+    /**
+     * Throws an exception to reject.
+     */
+    public void recognize() {
+        program();
+    }
+
+    public void program() {
+    	
+    	//begin traversal
+    	//make sure the file is not empty
+    	if(lexer.inspectEOF()){
+    		throw new RuntimeException("Null W file");
+		}
+        while (!lexer.inspectEOF()) {
+            waveform();
+        }
+        lexer.consumeEOF();
+    }
+
+    public void waveform() {
+    	//check for valid ID assuming Lexer checks [A-Za-z][0-9A-Za-z_]
+    	if(!lexer.inspectID()){
+    		throw new RuntimeException("ID is missing");
+		}
+		//look for :
+		if(!lexer.inspect(":")){
+			throw new RuntimeException("ID is not followed by a :");
+		}else{
+			lexer.consume(":");
+			//check bitset
+			if (!bits()) throw new RuntimeException("Bitset error");		
+		}
+		
+		//make sure it's terminated by a ";"
+    	if(!lexer.inspect(";")){
+    		throw new RuntimeException("Waveform not terminated by a ;");
+    	}else{
+    		lexer.consume(";");
+    	}
+		return;
+    	
+    }
+    
+    public boolean bits(){
+    	
+    	//must have at least one bit
+    	//check for invalid characters
+    	if(!lexer.inspect("0") && !lexer.inspect("1")) {
+    		return false;
+    	}
+    	
+    	while(lexer.inspect("0") || lexer.inspect("1")){        	
+    		if(lexer.inspect("0")) lexer.consume("0");
+    		if(lexer.inspect("1")) lexer.consume("1");
+    	}
+    	
+    	
+    	return true;
+    }
+}

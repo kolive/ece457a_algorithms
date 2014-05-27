@@ -1,0 +1,103 @@
+package ece351.f.parboiled;
+
+import org.parboiled.Rule;
+
+import ece351.util.CommandLine;
+import ece351.vhdl.VConstants;
+import ece351.w.ast.WProgram;
+
+//Parboiled requires that this class not be final
+public /*final*/ class FParboiledRecognizer extends FBase implements VConstants {
+
+	
+	public static void main(final String... args) {
+		final CommandLine c = new CommandLine(args);
+    	process(FParboiledRecognizer.class, c.readInputSpec());
+    }
+
+	@Override
+	public Rule Program() {
+		return Sequence(
+					push(new WProgram()),
+					OneOrMore(formula()),
+					EOI);
+	}
+	
+	Rule formula(){
+		return Sequence(
+    			W0(),
+    			var(),
+    			W0(),
+    			"<=",
+    			W0(),
+    			expr(), 
+    			W0(),
+    			Ch(';'),
+    			W0()
+    			);
+	}
+	
+	Rule var(){
+		return Sequence(TestNot(keyword()),
+				OneOrMore(letter()),
+				push(match()), // [Fprogram, var]
+				W0()
+				);
+	}
+	
+	Rule letter(){
+		return FirstOf(
+				CharRange('a', 'z'),
+				CharRange('A', 'Z')
+			);
+	}
+	
+	Rule expr(){
+		return Sequence(
+				term(),
+				push(match()), //[fprogram, var, left]
+				ZeroOrMore(Sequence(
+							IgnoreCase("or"),
+							W0(),
+							term(),
+							push(match()) //[fprogram, var, left, right]
+							)));
+	}
+	
+	Rule term(){
+		return Sequence(
+				factor(),
+				ZeroOrMore(Sequence(
+							IgnoreCase("and"),
+							W0(),
+							factor())));
+	}
+	
+	Rule factor(){
+		return FirstOf(
+				Sequence(
+						IgnoreCase("not"),
+						W0(),
+						factor()),
+				Sequence(
+						"( ",
+						expr(),
+						") "),
+				constant(),
+				var());
+	}
+	
+	Rule constant(){
+		return FirstOf("'0' ", "'1' ");
+	}
+	
+	
+	Rule keyword(){
+		return FirstOf(
+					IgnoreCase("or"),
+					IgnoreCase("and"),
+					IgnoreCase("not"));
+	}
+	
+
+}

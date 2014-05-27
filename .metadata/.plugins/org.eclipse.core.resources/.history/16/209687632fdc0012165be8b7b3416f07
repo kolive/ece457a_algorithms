@@ -1,0 +1,147 @@
+package ece351.f.parboiled;
+
+import java.util.List;
+
+import org.parboiled.Rule;
+import org.parboiled.common.ImmutableList;
+
+import ece351.common.ast.AndExpr;
+import ece351.common.ast.AssignmentStatement;
+import ece351.common.ast.ConstantExpr;
+import ece351.common.ast.Expr;
+import ece351.common.ast.NotExpr;
+import ece351.common.ast.OrExpr;
+import ece351.common.ast.VarExpr;
+import ece351.f.ast.FProgram;
+import ece351.util.CommandLine;
+import ece351.vhdl.VConstants;
+import ece351.w.ast.WProgram;
+
+// Parboiled requires that this class not be final
+public /*final*/ class FParboiledParser extends FBase implements VConstants {
+
+	
+	public static void main(final String[] args) {
+    	final CommandLine c = new CommandLine(args);
+    	final String input = c.readInputSpec();
+    	final FProgram fprogram = parse(input);
+    	assert fprogram.repOk();
+    	final String output = fprogram.toString();
+    	
+    	// if we strip spaces and parens input and output should be the same
+    	if (strip(input).equals(strip(output))) {
+    		// success: return quietly
+    		return;
+    	} else {
+    		// failure: make a noise
+    		System.err.println("parsed value not equal to input:");
+    		System.err.println("    " + strip(input));
+    		System.err.println("    " + strip(output));
+    		System.exit(1);
+    	}
+    }
+	
+	private static String strip(final String s) {
+		return s.replaceAll("\\s", "").replaceAll("\\(", "").replaceAll("\\)", "");
+	}
+	
+	public static FProgram parse(final String inputText) {
+		final FProgram result = (FProgram) process(FParboiledParser.class, inputText).resultValue;
+		assert result.repOk();
+		return result;
+	}
+
+	@Override
+	public Rule Program() {
+		return Sequence(
+					push(new WProgram()),
+					OneOrMore(formula()),
+					EOI);
+	}
+	
+	Rule formula(){
+		return Sequence(
+    			W0(),
+    			var(),
+    			W0(),
+    			"<=",
+    			W0(),
+    			expr(), 
+    			W0(),
+    			Ch(';'),
+    			W0()
+    			);
+	}
+	
+	Rule var(){
+		return Sequence(TestNot(keyword()),
+				OneOrMore(letter()),
+				push(new VarExpr(match())), // [Fprogram, varexpr]
+				W0()
+				);
+	}
+	
+	Rule letter(){
+		return FirstOf(
+				CharRange('a', 'z'),
+				CharRange('A', 'Z')
+			);
+	}
+	
+	Rule expr(){
+		return Sequence(
+				term(),
+				ZeroOrMore(Sequence(
+							IgnoreCase("or"),
+							W0(),
+							term()
+							)));
+	}
+	
+	Rule term(){
+		return Sequence(
+				factor(), //[FProgram, Some expr]
+				ZeroOrMore(Sequence(
+							IgnoreCase("and"),
+							W0(),
+							factor(),
+							push(new AndExpr(pop(), pop())//[Fprogram, LeftExpr, RightExpr]
+							)))); 
+	}
+	
+	Rule factor(){
+		return FirstOf(
+				Sequence(
+						IgnoreCase("not"),
+						W0(),
+						factor(), //[FProgram, Some Expr]
+						push(new NotExpr(pop())) //[Fprogram, NotExpr]
+						),
+				Sequence(
+						"( ",
+						expr(),
+						") "),
+				constant(),//[Fprogram, ConstExpr]
+				var()); //[FProgram, VarExpr]
+	}
+	
+	Rule constant(){
+		return FirstOf(
+				Sequence(
+					"'0' ",
+					push(ConstantExpr.FalseExpr)),
+				Sequence(
+					"'1' ",
+					push(ConstantExpr.TrueExpr)));
+	}
+	
+	
+	Rule keyword(){
+		return FirstOf(
+					IgnoreCase("or"),
+					IgnoreCase("and"),
+					IgnoreCase("not"));
+	}
+	
+
+}

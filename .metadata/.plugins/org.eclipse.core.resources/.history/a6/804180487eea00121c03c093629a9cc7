@@ -1,0 +1,564 @@
+package ece351.vhdl;
+
+import org.parboiled.Rule;
+import org.parboiled.common.ImmutableList;
+
+import ece351.common.ast.AndExpr;
+import ece351.common.ast.AssignmentStatement;
+import ece351.common.ast.ConstantExpr;
+import ece351.common.ast.EqualExpr;
+import ece351.common.ast.Expr;
+import ece351.common.ast.NAndExpr;
+import ece351.common.ast.NOrExpr;
+import ece351.common.ast.NotExpr;
+import ece351.common.ast.OrExpr;
+import ece351.common.ast.VarExpr;
+import ece351.common.ast.XNOrExpr;
+import ece351.common.ast.XOrExpr;
+import ece351.util.CommandLine;
+import ece351.vhdl.ast.Architecture;
+import ece351.vhdl.ast.Component;
+import ece351.vhdl.ast.DesignUnit;
+import ece351.vhdl.ast.Entity;
+import ece351.vhdl.ast.IfElseStatement;
+import ece351.vhdl.ast.Process;
+import ece351.vhdl.ast.VProgram;
+
+//Parboiled requires that this class not be final
+public/* final */class VParser extends VBase {
+
+	public static void main(final String arg) {
+		main(new String[] { arg });
+	}
+
+	public static void main(final String[] args) {
+		final CommandLine c = new CommandLine(args);
+		VProgram vprog = parse(c.readInputSpec());
+		System.out.println(vprog);
+	}
+
+	public static VProgram parse(final String arg) {
+		return (VProgram) process(VParser.class, arg).resultValue;
+	}
+
+	public Rule Program() {
+		// TODO: Write a VHDL parser that pushes an instance of VProgram to the
+		// top of the stack when it is done parsing
+		// For the grammar production Id, ensure that the Id does not match any
+		// of the keywords specified
+		// in the rule, 'Keyword'
+// TODO: 237 lines snipped
+		return Sequence(
+				//push empty vprogram
+				push(new VProgram()),
+
+				ZeroOrMore(Sequence(
+	    					W0(),
+	    					DesignUnit(),
+	    					//[Vprogram, Designunit]
+	    					//pop design unit, pop vprogram
+	    					//append design unit to vprogram
+	    					swap(),
+	    					push(((VProgram)pop()).append((DesignUnit)pop()))
+	    					
+	    					//push vprogram)
+	    					)),
+				EOI);
+	}
+	
+	
+    
+    Rule DesignUnit(){
+    	return Sequence(
+    			EntityDecl(),
+    			//[Vprogram, Entity]
+    			W(),
+    			ArchBody(),
+    			//[Vprogram, Entity, Arch]
+    			
+    			//pop arch, pop entity, push new DesignUnit(Entity, Arch)
+    			push(new DesignUnit((Architecture)pop(), (Entity)pop()))
+    			//[Vprogram, Designunit]
+    			);
+    }
+    
+    Rule EntityDecl(){
+    	return Sequence(
+    				ENTITY(),
+    				W(),
+    				Id(),
+    				//[Vprogram, String ID{entity ident}]
+    				W(),
+    				IS(),
+    				W(),
+    				PORT(),
+    				W0(),
+    				'(',
+    				W0(),
+    				IdList(),
+    				//[Vprogram, String ID{entity ident}, ImmutableList{inputs}]
+    				W0(),
+    				':',
+    				W0(),
+    				IN(),
+    				W(),
+    				BIT(),
+    				W0(),
+    				';',
+    				W0(),
+    				IdList(),
+    				//[Vprogram, StringID{entity ident}, ImmutableList{inputs}, ImmutableList{outputs}]
+    				W0(),
+    				':',
+    				W0(),
+    				OUT(),
+    				W(),
+    				BIT(),
+    				W0(),
+    				')',
+    				W0(),
+    				';',
+    				W0(),
+    				END(),
+    				W0(),
+    				FirstOf( ENTITY(), Sequence(Id(), drop(), W0(), ';') ),
+    				//push new entity using outputs, inputs, ident
+    				push(new Entity((ImmutableList)pop(), (ImmutableList)pop(), (String)pop()))
+    				//[Vprogram, Entity]
+    			);
+    
+    }
+    
+    Rule ArchBody(){
+    	return Sequence(
+    				ARCHITECTURE(),
+    				W(),
+    				Id(),
+    				//[Vprogram, Entity, String{ArchName}]
+    				W(),
+    				OF(),
+    				W(),
+    				Id(),
+    				//[Vprogram, Entity, String{ArchName}, String{EntityName}]
+    				W(),
+    				IS(),
+    				W(),
+    				//create new arch using arch name and entity name
+    				push(new Architecture((String)pop(), (String)pop())),
+    				//[Vprogram, Entity, Arch]
+    				Optional(
+    					Sequence(
+    						W0(),
+    						SIGNAL(),
+    						W(),
+    						IdList(),
+    						//[Vprogram, Entity, Arch, ImmutableList{signals}]
+    						W0(),
+    						':',
+    						W0(),
+    						BIT(),
+    						W0(),
+    						';',
+    						W0(),
+    						//append signals to arch
+    						swap(),
+    						push(((Architecture)pop()).setSignals((ImmutableList)pop()))
+    						//[Vprogram, Entity, Arch]
+    					)
+    				),
+    				BEGIN(),
+    				W(),
+    				//push new immutable list of components
+    				push(ImmutableList.of()),
+    				//[Vprogram, Entity, Arch, ImmutableList{components}]
+    				ZeroOrMore(
+    						Sequence(
+    								CompInst(),
+    								//append each comp inst to immutable list
+    								swap(),
+    								push( ((ImmutableList<Component>)pop()).append((Component)pop()) )
+    								)),
+    				//push list of comp insts to arch
+    				swap(),
+    				push(((Architecture)pop()).setComponents((ImmutableList)pop())),
+					//[Vprogram, Entity, Arch]
+    				W0(),
+    				FirstOf( ProcessStmts(), SigAssnStmts() ),
+					//[Vprogram, Entity, Arch, ImmutableList(processstmts or sig stmts )]
+    				//append list to arch
+					swap(),
+					push(((Architecture)pop()).setStatements((ImmutableList)pop())),
+					//[Vprogram, Entity, Arch]
+    				W0(),
+    				END(),
+    				W(),
+    				Id(),
+    				drop(),
+    				W0(),
+    				';',
+    				W0()
+    			);
+    }
+    
+    Rule IdList(){
+    	return Sequence(
+    			//push new empty immutable list 
+    			//[Vprogram, stuff, ImmutableList{ids}]
+    			push(ImmutableList.of()),
+    			Id(),
+    			//[Vprogram, stuff, ImmutableList{ids}, String{id}]
+    			//append each id to the immutable list
+    			//[Vprogram, stuff, ImmutableList{ids}]
+    			swap(),
+    			push(((ImmutableList<String>)pop()).append((String)pop())),
+    			ZeroOrMore(
+    					Sequence(
+    							W0(), ',', W0(), 
+    							Id(),
+    							//[Vprogram, stuff, ImmutableList{ids}, String{id}]
+    							//append each id to the immutable list
+    							//[Vprogram, stuff, ImmutableList{ids}]
+    							swap(),
+    							push(((ImmutableList<String>)pop()).append((String)pop()))
+    							)));
+    }
+    
+    Rule SigAssnStmts(){
+    	return Sequence(
+    			//push new empty immutable list
+    			//[Vprogram, stuff, ImmutableList{sigassn}]
+    			push(ImmutableList.of()),
+    			OneOrMore(
+    			Sequence(
+    					SigAssnStmt(),
+    					//[Vprogram, stuff, ImmutableList{sigassn}, SigAssn]
+    					//append each one to the list
+    					swap(),
+    					push(((ImmutableList<AssignmentStatement>)pop()).append((AssignmentStatement)pop())),
+    					//[Vprogram, stuff, ImmutableList{sigassn}
+    					W0()))
+    			);
+    }
+    
+    Rule SigAssnStmt(){
+    	return Sequence(
+    			Id(),
+    			//[Vprogram, stuff, String{id}
+    			W0(),
+    			"<=",
+    			W0(),
+    			Expr(),
+    			//[Vprogram, stuff, String{id}, Expr]
+    			//push new AssnStmt
+    			swap(),
+    			push(new AssignmentStatement((String)pop(), (Expr)pop())),
+    			//[Vprogram, stuff, AssnStmt]
+    			';');
+    }
+    
+    Rule ProcessStmts(){
+    	return Sequence(
+    			//make new immutable list of process stmts
+				//[Vprogram, stuff, ImmutableList{processtmt}
+				push(ImmutableList.of()),
+    			OneOrMore(
+    			Sequence(
+    					ProcessStmt(),
+    					//[Vprogram, stuff, immutablelist{processstmt}, processtmt]
+    					//append each process stmt
+    					swap(),
+    					push( ((ImmutableList<Process>)pop()).append((Process)pop()) ),
+    					//[Vprogram, stuff, ImmutableList{processtmt}
+    					W0()))
+    			);
+    }
+    
+    Rule ProcessStmt(){
+    	return Sequence(
+    			//push new process
+    			//[vprogram, stuff, process]
+    			push(new Process()),
+    			PROCESS(),
+    			W0(),
+    			'(',
+    			W0(),
+    			IdList(),
+    			//[vprogram, stuff, process, immutablelist{sensitivitylist}]
+    			// append the sensitivity list
+    			swap(),
+    			push( ((Process)pop()).setSensitivityList( (ImmutableList)pop()) ),
+    			//[vprogram, stuff, process]
+    			W0(),
+    			')',
+    			W0(),
+    			BEGIN(),
+    			W(),
+    			FirstOf( 
+    					IfElseStmts(), 
+    					SigAssnStmts() ),
+    			//[vprogram, stuff, process, immutablelist{statements}]
+    			//append the statements to the process
+    			swap(),
+    			push( ((Process)pop()).setStatements( (ImmutableList)pop()) ),
+    			//[vprogram, stuff, process]
+    			W0(),
+    			ENDPROCESS(),
+    			AnyOf("; \t\n\r\f"),
+    			W0()
+    			);
+    }
+    
+    Rule IfElseStmts(){
+
+		return Sequence(
+				//append empty list of ifelsestms
+				//[vprogram, stuff, immutablelist{ifelse}]
+		    	push(ImmutableList.of()),
+    			OneOrMore(
+    			Sequence(
+    					IfElseStmt(),
+    					//append ifelse
+    					//[vprogram, stuff, immutablelist{ifelse}, ifelse]
+    					swap(),
+    					push( ((ImmutableList<IfElseStatement>)pop()).append((IfElseStatement)pop()) ),
+    					//[vprogram, stuff, immutablelist{ifelse}]
+    					W0()))
+    					
+    			);
+    }
+    
+    Rule IfElseStmt(){
+    	return Sequence(
+    				IF(),
+    				W0(),
+    				Expr(),
+    				//[vprogram, stuff, expr]
+    				//push new ifelse with expr as cdtn
+    				push(new IfElseStatement((Expr)pop())),
+    				//[vprogram, stuff, ifelse]
+    				W0(),
+    				THEN(),
+    				W(),
+    				SigAssnStmts(),
+    				//[vprogram, stuff, ifelse, immutablelist{assnstmts}]
+    				//append list to true block
+    				swap(),
+    				push(((IfElseStatement)pop()).setTrueBlock((ImmutableList)pop())),
+    				//[vprogram, stuff, ifelse]
+    				W0(),
+    				ELSE(),
+    				W(),
+    				SigAssnStmts(),
+    				//[vprogram, stuff, ifelse, immutablelist{assnstmts}]
+    				//append list to else block
+    				swap(),
+    				push(((IfElseStatement)pop()).setElseBlock((ImmutableList)pop())),
+    				//[vprogram, stuff, ifelse]
+    				W0(),
+    				END(),
+    				W0(),
+    				IgnoreCase("if"),
+    				Optional(Sequence(W(),Id(),drop(), W0())),
+    				';',
+        			AnyOf(" \t\n\r\f"),
+    				W0()
+    			);
+    }
+    
+    Rule CompInst(){
+    	return Sequence(
+    				Id(),
+    				//[vpgrogram, stuff, id{name}]
+    				W0(),
+    				':',
+    				W0(),
+    				ENTITY(),
+    				W(),
+    				IgnoreCase("work."),
+    				Id(),
+    				//[vprogram, stuff, id{name}, id{entityname}]
+    				W(),
+    				PORT(),
+    				W0(),
+    				MAP(),
+    				W0(),
+    				'(',
+    				W0(),
+    				IdList(),
+    				//[vprogram, stuuff, id{name}, id{entityname}, immutablelist{sigs}]
+    				//push new component
+    				push(new Component( ((ImmutableList)pop()), (String)pop(), (String)pop() )),
+    				//[vprogram, stuff, component]
+    				W0(),
+    				')',
+    				W0(),
+    				';',
+    				W0()
+    			);
+    }
+    
+    Rule Expr(){
+    	return Sequence(
+    				Relation(),
+    				//[vprogram, stuff, expr]
+    				ZeroOrMore(
+    						Sequence(
+    								W0(),
+    								LogicOp()
+    								)),
+    								
+    				W0()
+    			);
+    }
+    
+    Rule Relation(){
+    	return Sequence(
+    				Factor(),
+    				//[vprogram, stuff, expr]
+    				Optional(Sequence(
+    							W0(),
+    							RelOp(),
+    							W0(),
+    							Factor(),
+    							//[vprogram, stuff, expr, expr]
+    							//push new equal expr
+    							push(new EqualExpr((Expr)pop(), (Expr)pop()))
+    							//[vprogram, stuff, expr{equal}
+    							)),
+    				W0()
+    			);
+    }
+    
+    Rule Factor(){
+    	return FirstOf(
+    				Sequence(
+    						W0(),
+    						IgnoreCase("not"),
+    						W0(),
+    		    			Literal(),
+    		    			//[vpgrogram, stuff, Expr]
+    		    			//push new NotExpr
+    		    			push(new NotExpr((Expr)pop())),
+    		    			//[vpgrogram, stuff, NotExpr]
+    		    			W0()),
+    		    	Sequence(
+    		    			W0(),
+    		    			Literal(),
+    		    			//[vpgoram, stuff, Expr]
+    		    			W0())
+    			);
+    }
+    
+    Rule Literal(){
+    	return FirstOf(
+    				Sequence(
+    						Id(),
+    						//[vprogram, stuff, varexpr]
+    						push(new VarExpr(pop())),
+    						W0()
+    						),
+    				
+    				Sequence(
+    						'\'',
+    						Constant(),
+    						//[vprogram, stuff, constantexpr]
+    						'\''),
+    				Sequence('(', 
+    						Expr(),
+    						//[vprogram, stuff, expr]
+    						')')
+    			);
+    }
+    
+    Rule LogicOp(){
+    	return FirstOf(
+    			Sequence(
+    					AND(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, andexpr]
+						push(new AndExpr((Expr)pop(), (Expr)pop()))
+						),
+				Sequence(
+						OR(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, orexpr]
+						push(new OrExpr((Expr)pop(), (Expr)pop()))
+						),
+				Sequence(
+						XOR(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, xorexpr]
+						push(new XOrExpr((Expr)pop(), (Expr)pop()))
+						),
+				Sequence(
+						NAND(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, nandexpr]
+						push(new NAndExpr((Expr)pop(), (Expr)pop()))
+						),
+				Sequence(
+						NOR(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, orexpr]
+						push(new NOrExpr((Expr)pop(), (Expr)pop()))
+						),
+				Sequence(
+						XNOR(),
+    					W0(),
+						Relation(),
+    					//[vprogram, stuff, expr, expr]
+    					//[vprogram, stuff, xnorexpr]
+						push(new XNOrExpr((Expr)pop(), (Expr)pop()))
+						)
+    			);
+		
+		
+    }
+    
+    Rule RelOp(){
+    	return Ch('=');
+    }
+    
+    Rule Constant(){
+    	return FirstOf(
+    			Sequence(
+    					W0(),
+    					"0",
+    					push(ConstantExpr.FalseExpr),
+    					//[vprogram,stuff,constantexpr]
+    					W0()),
+    			Sequence(
+    					W0(),
+    					"1",
+    					push(ConstantExpr.TrueExpr),
+    					//[vprogram,stuff,constantexpr]
+    					W0()));
+    }
+    
+    Rule Id(){
+    	return Sequence(
+    			Sequence(
+    			TestNot(Keyword()),
+				OneOrMore(Char()),
+				ZeroOrMore(
+					FirstOf(
+						Char(),	
+						Digit(),
+						'_'
+						)
+					)),
+				push(match())
+				);
+    }
+
+}

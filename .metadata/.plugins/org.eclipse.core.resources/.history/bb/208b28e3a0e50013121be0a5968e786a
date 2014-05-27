@@ -1,0 +1,150 @@
+ 
+import java.util.*;
+ 
+public class Assignment1 {
+	
+	public static void main(String args[]){
+		int[] start = new int[]{0,0,2,1,2,1,2};
+		//questionOneBFS(start);
+		//questionOneDFS(start);
+		questionOneHillClimb(start);
+	}
+	
+	private static void questionOneHillClimb(int[] start) {
+		Stack<int[]> hillclimb = new Stack<int[]>();
+		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
+		int[] current = start;
+		int i = 0;
+		
+		validCheck.put(Arrays.toString(start), true);	
+		hillclimb.push(start);
+		while(hillclimb.size() > 0 && !Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
+			current = hillclimb.pop();
+			System.out.println(" Node: " + i + " " + Arrays.toString(current));
+			i++;
+			ArrayList<int[]> children = generateSortedChildren(validCheck, current, new HillClimbingHeuristic());
+			for(int[] c :  children){
+				hillclimb.push(c);
+			}
+			
+		}
+		
+	}
+
+	public static void questionOneBFS(int[] state){		
+		Queue<int[]> bfs = new LinkedList<int[]>();
+		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
+		validCheck.put(Arrays.toString(state), true);
+		int[] current = state;
+		int[] countToNextLevel = new int[100];
+		countToNextLevel[0] = 1;
+		int i = 0;
+		while(!Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
+			
+			System.out.println("Level: " + i + " Node: " + Arrays.toString(current));
+			
+			ArrayList<int[]> children = generateChildren(validCheck, current);
+			countToNextLevel[i+1] += children.size();
+			for(int[] c :  children){
+				bfs.add(c);
+			}
+			
+			current = bfs.poll();
+			countToNextLevel[i]--;
+			if(countToNextLevel[i] == 0){
+				i++;
+			}
+		}
+		System.out.println("Level: " + i + " Node: " + Arrays.toString(current));
+	}
+	
+	public static void questionOneDFS(int[] state){		
+		Stack<int[]> dfs = new Stack<int[]>();
+		Stack<Integer> currentDepth = new Stack<Integer>();
+		HashMap<String, Boolean> validCheck = new HashMap<String, Boolean>();
+		int[] current = state;
+		int n = 0;
+		int i = 0;
+		
+		validCheck.put(Arrays.toString(state), true);	
+		dfs.push(state);
+		currentDepth.push(0);
+		while(dfs.size() > 0 && !Arrays.toString(current).equals("[2, 2, 2, 1, 1, 0, 0]")) {
+			
+			current = dfs.pop();
+			n = currentDepth.pop();
+			
+			System.out.println("Depth: " + n + " Node: " + Arrays.toString(current));
+			
+			ArrayList<int[]> children = generateChildren(validCheck, current);
+			for(int[] c :  children){
+				if(n!=3){
+					dfs.push(c);
+					currentDepth.push(n+1);
+				}
+			}
+			
+		}
+		
+	}
+ 
+	private static ArrayList<int[]> generateChildren(HashMap<String, Boolean> validCheck, int[] state) {
+		int[] newState = state.clone();
+		ArrayList<int[]> children = new ArrayList<int[]>();
+		
+		//get location of zeros
+		int x = -1;
+		int y = -1;
+		for(int i = 0; i < 6; i++){
+			if(state[i] == 0 && state[i+1] == 0){
+				x = i;
+				y = i+1;
+			}
+		}
+		
+		for(int i = 0; i < 6; i++){ 
+			if(state[i] != 0 && state[i+1] != 0){	
+				newState[x] = newState[i];
+				newState[y] = newState[i+1];
+				newState[i] = 0;
+				newState[i+1] = 0;
+				if(!validCheck.containsKey(Arrays.toString(newState))){
+					children.add(newState);
+					validCheck.put(Arrays.toString(newState), true);
+				}
+				newState = state.clone();
+			}
+		}
+		
+		return children;
+	}
+	
+	private static ArrayList<int[]> generateSortedChildren(HashMap<String, Boolean> validCheck, int[] state, Comparator<int[]> heuristic){
+		ArrayList<int[]> children = generateChildren(validCheck, state);
+		Collections.sort(children, heuristic);
+		return children;
+	}
+	
+	public static class HillClimbingHeuristic implements Comparator<int[]>{
+		@Override
+		public int compare(int[] state1, int[] state2){
+			int oneScore = evaluate(state1);
+			int twoScore = evaluate(state2);
+			return (oneScore >= twoScore) ? 1 : -1;
+		}
+		
+		//returns a quantitative evaluation of how many coins are in the right place
+		private int evaluate(int[] state){
+			int count = 0;
+			int[] ideal = new int[]{2,2,2,1,1,0,0};
+			for(int i = 0; i < state.length; i++){
+				if( state[i] == ideal [i] ) count++;
+			}
+			
+			return count;
+		
+		}
+	}
+	
+ 
+}

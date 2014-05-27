@@ -1,0 +1,94 @@
+package ece351.f.parboiled;
+
+import org.parboiled.Rule;
+
+import ece351.util.CommandLine;
+import ece351.vhdl.VConstants;
+
+//Parboiled requires that this class not be final
+public /*final*/ class FParboiledRecognizer extends FBase implements VConstants {
+
+	
+	public static void main(final String... args) {
+		final CommandLine c = new CommandLine(args);
+    	process(FParboiledRecognizer.class, c.readInputSpec());
+    }
+
+	@Override
+	public Rule Program() {
+		return Sequence(OneOrMore(formula()), EOI);
+		// For the grammar production Id, ensure that the Id does not match any of the keywords specified
+		// in the rule, 'Keyword'
+// TODO: 39 lines snipped
+	}
+	
+	Rule formula(){
+		return Sequence(
+    			W0(),
+    			var(),
+    			W0(),
+    			Ch('<'),
+    			Ch('='),
+    			W0(),
+    			expr(), 
+    			W0(),
+    			Ch(';'),
+    			W0()
+    			);
+	}
+	
+	Rule var(){
+		return Sequence(TestNot(keyword()),
+				OneOrMore(letter())
+				);
+	}
+	
+	Rule letter(){
+		FirstOf(
+				CharRange('a', 'z'),
+				CharRange('A', 'Z')
+			);
+	}
+	
+	Rule expr(){
+		return Sequence(
+				term(),
+				ZeroOrMore(Sequence(
+							IgnoreCase("or"),
+							term())));
+	}
+	
+	Rule term(){
+		return Sequence(
+				factor(),
+				ZeroOrMore(Sequence(
+							IgnoreCase("and"),
+							factor())));
+	}
+	
+	Rule factor(){
+		return OneOrMore(
+				Sequence(
+						IgnoreCase("not"),
+						factor()),
+				Sequence(
+						Ch('('),
+						expr(),
+						Ch(')')),
+				constant(),
+				var());
+	}
+	
+	Rule constant(){
+		return FirstOf("0 ", "1 ");
+	}
+	
+	
+	Rule keyword(){
+		return null;
+	}
+	
+	
+	}
+
+}
