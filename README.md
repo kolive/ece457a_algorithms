@@ -10,5 +10,9 @@ I would ask that if you're taking the course or a similar course on the subject 
 
 Otherwise, go crazy.
 
-Author - kolive
-Contributors - 
+Contributors 
+------------
+
+kolive
+rawkcy
+wangfowen
