@@ -13,7 +13,8 @@ function varargout = tictactoe(varargin)
 %      TICTACTOE('Property','Value',...) creates a new TICTACTOE or raises the
 %      existing singleton*.  Starting from the left, property value pairs are
 %      applied to the GUI before tictactoe_OpeningFunction gets called.  An
-%      unrecognized property name or invalid value makes property application
+%      unrecognized property name or invalid value makes property
+%      application
 %      stop.  All inputs are passed to tictactoe_OpeningFcn via varargin.
 %
 %      *See GUI Options on GUIDE's Tools menu.  Choose "GUI allows only one
@@ -279,6 +280,16 @@ if turn==2
     decision(handles);
 end
 
+% Kyle's notes:
+% This is the function that does the response move, it's rule based
+% To convert to minimax, we need a function that can generate each valid
+% next state and evaluate to determine min/max
+
+% this works by looking at each possible winning row and checking to see if
+% you can win by putting a square there
+
+% if there's no winning spot, switch to the view of the opponent and try to
+% block (j = turn identifier), num=square to put piece in
 function decision(handles)
 avsq=getappdata(gcbf,'avsq');
 board=getappdata(gcbf,'board');
