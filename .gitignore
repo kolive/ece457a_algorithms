@@ -3,5 +3,6 @@
 *.jar
 *.war
 *.ear
+*.swp
 
 hs_err_pid*
