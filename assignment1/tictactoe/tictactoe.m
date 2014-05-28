@@ -288,55 +288,103 @@ end
 % this works by looking at each possible winning row and checking to see if
 % you can win by putting a square there
 
+%http://www.neverstopbuilding.com/minimax
+%def score(game, depth)
+%    if game.win?(@player)
+%        return 10 - depth
+%    elsif game.win?(@opponent)
+%        return depth - 10
+%    else
+%        return 0
+%    end
+%end
+
+%def minimax(game)
+%    return score(game) if game.over?
+%    scores = [] # an array of scores
+%    moves = []  # an array of moves
+%
+%    # Populate the scores array, recursing as needed
+%    game.get_available_moves.each do |move|
+%        possible_game = game.get_new_state(move)
+%        scores.push minimax(possible_game)
+%        moves.push move
+%    end
+%
+%    # Do the min or the max calculation
+%    if game.active_turn == @player
+%        # This is the max calculation
+%        max_score_index = scores.each_with_index.max[1]
+%        @choice = moves[max_score_index]
+%        return scores[max_score_index]
+%    else
+%        # This is the min calculation
+%        min_score_index = scores.each_with_index.min[1]
+%        @choice = moves[min_score_index]
+%        return scores[min_score_index]
+%    end
+%end
+
+%(* Initial call for maximizing player *)
+%minimax(origin, depth, TRUE)
+function optimal_score = minimax(board)
+  optimal_score = 1;
+
+function child = get_child_with_score(optimal_score)
+  child = 1;
+
 % if there's no winning spot, switch to the view of the opponent and try to
 % block (j = turn identifier), num=square to put piece in
 function decision(handles)
-avsq=getappdata(gcbf,'avsq');
-board=getappdata(gcbf,'board');
-num=0;
-i=1;
-j=2;
-pause(0.5);
+  avsq=getappdata(gcbf,'avsq');
+  board=getappdata(gcbf,'board');
+  num=0;
+  %i=1;
+  j=2;
+  pause(0.5);
 
-%try to win, if u can't try to block
-while num==0
-    if i==1     
-    	s=[1 2 3];
-    elseif i==2
-    	s=[4 5 6];
-    elseif i==3
-    	s=[7 8 9];
-    elseif i==4
-    	s=[1 4 7];
-    elseif i==5
-    	s=[2 5 8];
-    elseif i==6
-    	s=[3 6 9];
-    elseif i==7
-    	s=[1 5 9];
-    elseif i==8
-    	s=[3 5 7];
-    elseif i==9 && j==2
-        j=1;
-        i=1;
-    elseif i==9 && j==1
-        num=avsq(ceil(rand*(length(avsq)))); %pick any sq if everything fails
-    end
-	
-	if board(s(1))==j && board(s(2))==j && board(s(3))==0
-        num=s(3);
-	elseif board(s(1))==j && board(s(2))==0 && board(s(3))==j
-        num=s(2);
-	elseif board(s(1))==0 && board(s(2))==j && board(s(3))==j
-        num=s(1);
-	end
-    i=i+1;
-end
+  %try to win, if u can't try to block
+  %while num==0
+  %    if i==1     
+  %    	s=[1 2 3];
+  %    elseif i==2
+  %    	s=[4 5 6];
+  %    elseif i==3
+  %    	s=[7 8 9];
+  %    elseif i==4
+  %    	s=[1 4 7];
+  %    elseif i==5
+  %    	s=[2 5 8];
+  %    elseif i==6
+  %    	s=[3 6 9];
+  %    elseif i==7
+  %    	s=[1 5 9];
+  %    elseif i==8
+  %    	s=[3 5 7];
+  %    elseif i==9 && j==2
+  %        j=1;
+  %        i=1;
+  %    elseif i==9 && j==1
+  %        num=avsq(ceil(rand*(length(avsq)))); %pick any sq if everything fails
+  %    end
+  %	
+  %	if board(s(1))==j && board(s(2))==j && board(s(3))==0
+  %        num=s(3);
+  %	elseif board(s(1))==j && board(s(2))==0 && board(s(3))==j
+  %        num=s(2);
+  %	elseif board(s(1))==0 && board(s(2))==j && board(s(3))==j
+  %        num=s(1);
+  %	end
+  %    i=i+1;
+  %end
 
-picksquare(handles,num);
+  optimal_score = minimax(board);
+  num = get_child_with_score(optimal_score);
 
-% --- Executes during object creation, after setting all properties.
-function MTTT_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to MTTT (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    empty - handles not created until after all CreateFcns called
+  picksquare(handles,num);
+
+  % --- Executes during object creation, after setting all properties.
+  function MTTT_CreateFcn(hObject, eventdata, handles)
+  % hObject    handle to MTTT (see GCBO)
+  % eventdata  reserved - to be defined in a future version of MATLAB
+  % handles    empty - handles not created until after all CreateFcns called
