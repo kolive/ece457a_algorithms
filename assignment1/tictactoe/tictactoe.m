@@ -325,8 +325,44 @@ end
 %    end
 %end
 
-function game_tree = create_game_tree()
-  game_tree = [1 2 3];
+function game_tree = create_game_tree(board)
+  % 3 matrixes, one for each node and it's score, one for each node and
+  % it's parent, one for each node and it's level
+  nodes = []
+  node_scores = [];
+  node_parents = [];
+  node_levels = [];
+  node_id = 0;
+ 
+  node_parents = [node_parents, -1];
+  node_scores = [node_scores, eval(board)];
+  node_levels = [node_levels, 0];
+  node_parents = [node_parents, -1];
+  
+  %init generation
+  nodes = [ nodes , board ];
+  %for each node in nodes
+  while( node_id < size(nodes,2) )        
+      %score the node
+      node_scores = [node_scores, eval(nodes(node_id))]; 
+      
+      %for each child of the current node
+      % set the node = [node, new node]
+      % set the node_parents = [node_parents, node_id]; 
+      % set the node_levels = [node_levels, node_levels(node_id)+1]; 
+      
+      node_id = node_id + 1;
+  end
+  %set the level of the node
+  %increment node counter
+  %calculate children, push into nodes - How to keep track of node level? Use parent's
+  %level + 1? 
+  %check if there are more nodes to investigate (i.e., if current node
+  %index < max node index
+  
+  %todo: check syntax
+  game_tree = [ nodes ; node_scores ; node_parents ; node_levels ];
+  
 
 %(* Initial call for maximizing player *)
 %minimax(origin, depth, TRUE)
