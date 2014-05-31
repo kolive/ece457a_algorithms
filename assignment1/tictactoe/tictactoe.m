@@ -325,9 +325,13 @@ end
 %    end
 %end
 
+function game_tree = create_game_tree()
+  game_tree = [1 2 3];
+
 %(* Initial call for maximizing player *)
 %minimax(origin, depth, TRUE)
 function optimal_score = minimax(board)
+  create_game_tree();
   optimal_score = 1;
 
 function child = get_child_with_score(optimal_score)
