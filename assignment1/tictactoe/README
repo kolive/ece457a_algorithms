@@ -15,3 +15,13 @@ The second one is "nodes" where nodes(i,:) describes the board for that node
 
 There is also a "moves" array which describes where the piece must be placed in order to get to node i.
 
+minimax(game_tree)
+=================
+
+takes in the game_tree and performs the minimax algorithm and returns the new scoring tree with the minimax weighting
+
+
+get_tile_from_score(optimal_score, moves)
+=========================================
+
+takes in the minimax weighted scoring tree and moves to return the tile that should be played for the best move

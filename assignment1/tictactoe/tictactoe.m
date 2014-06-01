@@ -294,12 +294,12 @@ function [game_tree, nodes, moves] = create_game_tree(board)
   %for each node in nodes
   while(node_id <= size(nodes,1))
       %score the node
-      node_scores = [node_scores, eval_board(nodes(node_id,:), node_levels(node_id))];
+      node_scores = [node_scores, eval_board(nodes(node_id,:))];
 
-      %limiting depth to 5 so that the AI responds in a reasonable amount of time is feasible
+      %limiting depth to 4 so that the AI responds in a reasonable amount of time
       if(node_levels(node_id) < 4)
         win = checkboard(nodes(node_id,:));
-        if(win ~= 0)   
+        if(win ~= 0)
             is_node_leaf = [is_node_leaf, 1];
         else
             is_node_leaf = [is_node_leaf, 0];
@@ -310,13 +310,12 @@ function [game_tree, nodes, moves] = create_game_tree(board)
         zeroes = [];
       end
 
-      
-       
       if(win == 0)
           for k = zeroes
             newboard = nodes(node_id,:);
 
-            if(mod((node_levels(1,node_id)+1), 2) == 1)
+            % Choose an X or an O depending on whose turn it is
+            if(mod(node_levels(1,node_id), 2) == 0)
                 newboard(k) = 2;
             else
                 newboard(k) = 1;
@@ -331,6 +330,7 @@ function [game_tree, nodes, moves] = create_game_tree(board)
 
       node_id = node_id + 1;
   end
+
   game_tree = [ node_scores ; node_parents ; node_levels; is_node_leaf ];
 
 function optimal_score = minimax(game_tree)
@@ -341,31 +341,32 @@ function optimal_score = minimax(game_tree)
 
   % start by looking at the deepest level
   node_id = size(scores,2);
-  
-  %create an array which will hold the min/max score for each node
-  mmscores = ones(1, size(scores,2));
 
+  %create an array which will hold the min/max score for each node
   %initialize  to -999 so we know when to just take the value of the child
-  mmscores = mmscores * -999;
+  mmscores = ones(1, size(scores,2)) * -999;
 
   %end at first child of parent
   while(node_id >= 2)
-    % if the depth is odd, we want to max, if it's even we want to min
+    % if the depth is odd, we want to min, if it's even we want to max
     if(is_node_leaf(node_id))
         mmscores(node_id) = scores(node_id);
     end
+
     if(mmscores(parents(node_id)) == -999)
         mmscores(parents(node_id)) = mmscores(node_id);
     else
+        %since we're setting the one for the parent, it's the opposite for the optimality
         if (mod(levels(node_id),2) == 0)
             mmscores(parents(node_id)) = min(mmscores(parents(node_id)), mmscores(node_id));
         else
             mmscores(parents(node_id)) = max(mmscores(parents(node_id)), mmscores(node_id));
         end
     end
-    
+
     node_id = node_id - 1;
   end
+
   optimal_score = mmscores;
 
 function tile = get_tile_from_score(optimal_score, moves)
@@ -375,8 +376,6 @@ function tile = get_tile_from_score(optimal_score, moves)
   % for the scores with depth 1, find the one that matches optimal score
   while(node_id <= size(optimal_score,2))
     if (optimal_score(1) == optimal_score(node_id))
-      optimal_score(1)
-      optimal_score(node_id)
       break;
     end
 
@@ -401,7 +400,7 @@ function decision(handles)
 
   picksquare(handles,num);
 
-function eval = eval_board(board, depth)
+function eval = eval_board(board)
   i = 1;
   xscore = 0;
   oscore = 0;
@@ -435,12 +434,8 @@ function eval = eval_board(board, depth)
 
       i=i+1;
   end
-  %it seems to work better by adding the depth to the score, however this
-  %is not the eval function we talked about in class
-  
-  %also, i think with a perfect tree we would not need to add the depth to
-  %play well
-  eval = oscore - xscore + depth;
+
+  eval = oscore - xscore;
 
 function [ blank_indices ] = get_zeros( board )
     zero_loc = 1;
