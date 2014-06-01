@@ -281,7 +281,7 @@ function newgame_Callback(hObject, eventdata, handles)
   end
 
 function [game_tree, nodes] = create_game_tree(board)
-  % 3 matrixes, one for each node and it's score, one for each node and
+  % 3 matrices, one for each node and it's score, one for each node and
   % it's parent, one for each node and it's level
   nodes = [board];
   node_scores = [];
@@ -302,9 +302,9 @@ function [game_tree, nodes] = create_game_tree(board)
       for k = zeroes
         newboard = nodes(node_id,:);
         if(mod((node_levels(1,node_id)+1), 2) == 1)
-            newboard(k) = 1;
-        else
             newboard(k) = 2;
+        else
+            newboard(k) = 1;
         end
         nodes = [nodes; newboard];
         node_parents = [node_parents, node_id];
@@ -315,29 +315,47 @@ function [game_tree, nodes] = create_game_tree(board)
   end
   game_tree = [ node_scores ; node_parents ; node_levels ];
 
-function optimal_score = minimax(game_tree, nodes, player)
-  % player is X, we want to min
-  if (player == 1)
+function optimal_score = minimax(game_tree, nodes)
+  levels = game_tree(3, :);
+  scores = game_tree(1, :);
 
-  % player is O, we want to max
-  else
+  % start by looking at the deepest level
+  i = size(scores);
 
+  %end at first child of parent
+  while(i >= 2)
+    % if it's even, we want to max, if it's odd we want to min
+    if (mod(levels(i),2) == 0)
+
+    else
+
+    end
+
+    i = i - 1;
   end
+
   optimal_score = 4;
 
-function child = get_child_with_score(optimal_score, scores)
-  node_id = 1;
-  child = 1;
-  scores
+function tile = get_tile_from_score(optimal_score, nodes, scores, levels)
 
-  while(node_id <= size(scores, 2))
+  %first node is parent, so we skip that
+  node_id = 2;
+
+  % for the scores with depth 1, find the one that matches optimal score
+  while(levels(node_id) == 1)
     if (optimal_score == scores(node_id))
-      child = node_id;
       break;
     end
 
     node_id = node_id + 1;
   end
+
+  best_board = nodes(node_id, :);
+  current_board = nodes(1,:);
+
+  % compare with current row to see what's different and return that child
+  tile = find(best_board - current_board);
+
 
 % if there's no winning spot, switch to the view of the opponent and try to
 % block (j = turn identifier), num=square to put piece in
@@ -348,10 +366,8 @@ function decision(handles)
   pause(0.5);
 
   [game_tree, nodes] = create_game_tree(board);
-  % player is O
-  optimal_score = minimax(game_tree, nodes, 2);
-  % 1:9 are the children of the root
-  num = get_child_with_score(optimal_score, game_tree(1,1:9));
+  optimal_score = minimax(game_tree, nodes);
+  num = get_tile_from_score(optimal_score, nodes, game_tree(1,:), game_tree(3,:));
 
   picksquare(handles,num);
 
@@ -389,7 +405,7 @@ function eval = eval_board(board)
 
       i=i+1;
   end
-  eval = xscore - oscore;
+  eval = oscore - xscore;
 
 function [ blank_indices ] = get_zeros( board )
     zero_loc = 1;
