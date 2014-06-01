@@ -324,7 +324,7 @@ function optimal_score = minimax(game_tree, nodes)
 
   %end at first child of parent
   while(i >= 2)
-    % if it's even, we want to max, if it's odd we want to min
+    % TODO: if it's even, we want to max, if it's odd we want to min
     if (mod(levels(i),2) == 0)
 
     else
@@ -334,6 +334,7 @@ function optimal_score = minimax(game_tree, nodes)
     i = i - 1;
   end
 
+  % TODO: return the optimal score
   optimal_score = 4;
 
 function tile = get_tile_from_score(optimal_score, nodes, scores, levels)
