@@ -191,139 +191,94 @@ else
 end
 
 function picksquare(handles,num)
-turn=getappdata(gcbf,'turn');
-avsq=getappdata(gcbf,'avsq');
-avsq(avsq==num)=[];
-setappdata(gcbf,'avsq',avsq);
-board=getappdata(gcbf,'board');
-board(num)=turn;
-if turn==1
-    set(eval(['handles.pushbutton' int2str(num)]),'String','X');
-    turn=2;
-    set(handles.dispturn,'String','O Turn');
-elseif turn==2
-    set(eval(['handles.pushbutton' int2str(num)]),'String','O');
-    turn=1;
-    set(handles.dispturn,'String','X Turn');
-end
-setappdata(gcbf,'turn',turn);
-setappdata(gcbf,'board',board);
-[win]=checkboard(board);
+  turn=getappdata(gcbf,'turn');
+  avsq=getappdata(gcbf,'avsq');
+  avsq(avsq==num)=[];
+  setappdata(gcbf,'avsq',avsq);
+  board=getappdata(gcbf,'board');
+  board(num)=turn;
+  if turn==1
+      set(eval(['handles.pushbutton' int2str(num)]),'String','X');
+      turn=2;
+      set(handles.dispturn,'String','O Turn');
+  elseif turn==2
+      set(eval(['handles.pushbutton' int2str(num)]),'String','O');
+      turn=1;
+      set(handles.dispturn,'String','X Turn');
+  end
+  setappdata(gcbf,'turn',turn);
+  setappdata(gcbf,'board',board);
+  [win]=checkboard(board);
 
-if win~=0
-    for i=1:9
-        set(eval(['handles.pushbutton' int2str(i)]),'Enable','off');
-    end    
-	if win==1
-       set(handles.dispturn,'String','X WINS!');
-    elseif win==2
-       set(handles.dispturn,'String','O WINS!');
-    end
-end
+  if win~=0
+      for i=1:9
+          set(eval(['handles.pushbutton' int2str(i)]),'Enable','off');
+      end
+      if win==1
+         set(handles.dispturn,'String','X WINS!');
+      elseif win==2
+         set(handles.dispturn,'String','O WINS!');
+      end
+  end
 
-if win==0
-    if isempty(avsq)
-       for i=1:9
-           set(eval(['handles.pushbutton' int2str(i)]),'Enable','off');
-       end
-       set(handles.dispturn,'String','Tie Game');
-       return
-    end
-    if turn==2
-        decision(handles);
-    end
-end
+  if win==0
+      if isempty(avsq)
+         for i=1:9
+             set(eval(['handles.pushbutton' int2str(i)]),'Enable','off');
+         end
+         set(handles.dispturn,'String','Tie Game');
+         return
+      end
+      if turn==2
+          decision(handles);
+      end
+  end
 
-function [win]=checkboard(b)    
-win=0;
-for i=1:2
-    if b(1)==i && b(2)==i && b(3)==i
-        win=i;
-    elseif b(4)==i && b(5)==i && b(6)==i
-        win=i;
-    elseif b(7)==i && b(8)==i && b(9)==i
-        win=i;
-    elseif b(1)==i && b(4)==i && b(7)==i
-        win=i;
-    elseif b(2)==i && b(5)==i && b(8)==i
-        win=i;
-    elseif b(3)==i && b(6)==i && b(9)==i
-        win=i;
-    elseif b(1)==i && b(5)==i && b(9)==i
-        win=i;
-    elseif b(3)==i && b(5)==i && b(7)==i
-        win=i;
-    end
-end
+function [win]=checkboard(b)
+  win=0;
+  for i=1:2
+      if b(1)==i && b(2)==i && b(3)==i
+          win=i;
+      elseif b(4)==i && b(5)==i && b(6)==i
+          win=i;
+      elseif b(7)==i && b(8)==i && b(9)==i
+          win=i;
+      elseif b(1)==i && b(4)==i && b(7)==i
+          win=i;
+      elseif b(2)==i && b(5)==i && b(8)==i
+          win=i;
+      elseif b(3)==i && b(6)==i && b(9)==i
+          win=i;
+      elseif b(1)==i && b(5)==i && b(9)==i
+          win=i;
+      elseif b(3)==i && b(5)==i && b(7)==i
+          win=i;
+      end
+  end
 
 % --- Executes on button press in newgame.
 function newgame_Callback(hObject, eventdata, handles)
 % hObject    handle to newgame (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-for i=1:9
-    set(eval(['handles.pushbutton' int2str(i)]),'Enable','on');
-    set(eval(['handles.pushbutton' int2str(i)]),'String','');
-end
-turn=ceil(rand*2);
-if turn==1
-    set(handles.dispturn,'String','X Turn');
-elseif turn==2
-    set(handles.dispturn,'String','O Turn');
-end
-setappdata(gcbf,'turn',turn);
-board=zeros(1,9);
-setappdata(gcbf,'board',board);
-avsq=[1:9];
-setappdata(gcbf,'avsq',avsq);
-if turn==2
-    decision(handles);
-end
-
-% Kyle's notes:
-% This is the function that does the response move, it's rule based
-% To convert to minimax, we need a function that can generate each valid
-% next state and evaluate to determine min/max
-
-% this works by looking at each possible winning row and checking to see if
-% you can win by putting a square there
-
-%http://www.neverstopbuilding.com/minimax
-%def score(game, depth)
-%    if game.win?(@player)
-%        return 10 - depth
-%    elsif game.win?(@opponent)
-%        return depth - 10
-%    else
-%        return 0
-%    end
-%end
-
-%def minimax(game)
-%    return score(game) if game.over?
-%    scores = [] # an array of scores
-%    moves = []  # an array of moves
-%
-%    # Populate the scores array, recursing as needed
-%    game.get_available_moves.each do |move|
-%        possible_game = game.get_new_state(move)
-%        scores.push minimax(possible_game)
-%        moves.push move
-%    end
-%
-%    # Do the min or the max calculation
-%    if game.active_turn == @player
-%        # This is the max calculation
-%        max_score_index = scores.each_with_index.max[1]
-%        @choice = moves[max_score_index]
-%        return scores[max_score_index]
-%    else
-%        # This is the min calculation
-%        min_score_index = scores.each_with_index.min[1]
-%        @choice = moves[min_score_index]
-%        return scores[min_score_index]
-%    end
-%end
+  for i=1:9
+      set(eval(['handles.pushbutton' int2str(i)]),'Enable','on');
+      set(eval(['handles.pushbutton' int2str(i)]),'String','');
+  end
+  turn=ceil(rand*2);
+  if turn==1
+      set(handles.dispturn,'String','X Turn');
+  elseif turn==2
+      set(handles.dispturn,'String','O Turn');
+  end
+  setappdata(gcbf,'turn',turn);
+  board=zeros(1,9);
+  setappdata(gcbf,'board',board);
+  avsq=[1:9];
+  setappdata(gcbf,'avsq',avsq);
+  if turn==2
+      decision(handles);
+  end
 
 function [game_tree, nodes] = create_game_tree(board)
   % 3 matrixes, one for each node and it's score, one for each node and
@@ -333,13 +288,12 @@ function [game_tree, nodes] = create_game_tree(board)
   node_parents = [-1];
   node_levels = [0];
   node_id = 1;
-  
+
   %init generation
   %for each node in nodes
-  while(node_id <= size(nodes,1))  
-      node_id
+  while(node_id <= size(nodes,1))
       %score the node
-      node_scores = [node_scores, eval_board(nodes(node_id,:))]; 
+      node_scores = [node_scores, eval_board(nodes(node_id,:))];
       if(node_levels(node_id) < 4)
         zeroes = get_zeros(nodes(node_id,:));
       else
@@ -356,21 +310,34 @@ function [game_tree, nodes] = create_game_tree(board)
         node_parents = [node_parents, node_id];
         node_levels = [node_levels, node_levels(node_id)+1];
       end
-     
+
       node_id = node_id + 1;
   end
   game_tree = [ node_scores ; node_parents ; node_levels ];
-  
-  
 
-%(* Initial call for maximizing player *)
-%minimax(origin, depth, TRUE)
-function optimal_score = minimax(board)
-  mytree = create_game_tree(board);
-  optimal_score = 1;
+function optimal_score = minimax(game_tree, nodes, player)
+  % player is X, we want to min
+  if (player == 1)
 
-function child = get_child_with_score(optimal_score)
+  % player is O, we want to max
+  else
+
+  end
+  optimal_score = 4;
+
+function child = get_child_with_score(optimal_score, scores)
+  node_id = 1;
   child = 1;
+  scores
+
+  while(node_id <= size(scores, 2))
+    if (optimal_score == scores(node_id))
+      child = node_id;
+      break;
+    end
+
+    node_id = node_id + 1;
+  end
 
 % if there's no winning spot, switch to the view of the opponent and try to
 % block (j = turn identifier), num=square to put piece in
@@ -378,85 +345,51 @@ function decision(handles)
   avsq=getappdata(gcbf,'avsq');
   board=getappdata(gcbf,'board');
   num=0;
-  %i=1;
-  j=2;
   pause(0.5);
 
-  %try to win, if u can't try to block
-  %while num==0
-  %    if i==1     
-  %    	s=[1 2 3];
-  %    elseif i==2
-  %    	s=[4 5 6];
-  %    elseif i==3
-  %    	s=[7 8 9];
-  %    elseif i==4
-  %    	s=[1 4 7];
-  %    elseif i==5
-  %    	s=[2 5 8];
-  %    elseif i==6
-  %    	s=[3 6 9];
-  %    elseif i==7
-  %    	s=[1 5 9];
-  %    elseif i==8
-  %    	s=[3 5 7];
-  %    elseif i==9 && j==2
-  %        j=1;
-  %        i=1;
-  %    elseif i==9 && j==1
-  %        num=avsq(ceil(rand*(length(avsq)))); %pick any sq if everything fails
-  %    end
-  %	
-  %	if board(s(1))==j && board(s(2))==j && board(s(3))==0
-  %        num=s(3);
-  %	elseif board(s(1))==j && board(s(2))==0 && board(s(3))==j
-  %        num=s(2);
-  %	elseif board(s(1))==0 && board(s(2))==j && board(s(3))==j
-  %        num=s(1);
-  %	end
-  %    i=i+1;
-  %end
-
-  optimal_score = minimax(board);
-  num = get_child_with_score(optimal_score);
+  [game_tree, nodes] = create_game_tree(board);
+  % player is O
+  optimal_score = minimax(game_tree, nodes, 2);
+  % 1:9 are the children of the root
+  num = get_child_with_score(optimal_score, game_tree(1,1:9));
 
   picksquare(handles,num);
 
 function eval = eval_board(board)
-i = 1;
-xscore = 0;
-oscore = 0;
-while i<=8
-    if i==1     
-    	s=[1 2 3];
-    elseif i==2
-    	s=[4 5 6];
-    elseif i==3
-    	s=[7 8 9];
-    elseif i==4
-    	s=[1 4 7];
-    elseif i==5
-    	s=[2 5 8];
-    elseif i==6
-    	s=[3 6 9];
-    elseif i==7
-    	s=[1 5 9];
-    elseif i==8
-    	s=[3 5 7];
-    end
-    
-	%check row to see if X can win
-    if(board(s(1)) ~= 2 && board(s(2)) ~= 2 && board(s(3)) ~= 2)
-        xscore = xscore + 1;
-    end
-    %check row to see if O can win
-    if(board(s(1)) ~= 1 && board(s(2)) ~= 1 && board(s(3)) ~= 1)
-        oscore = oscore + 1;
-    end
-    
-    i=i+1;
-end
-eval = xscore - oscore;
+  i = 1;
+  xscore = 0;
+  oscore = 0;
+  while i<=8
+      if i==1
+        s=[1 2 3];
+      elseif i==2
+        s=[4 5 6];
+      elseif i==3
+        s=[7 8 9];
+      elseif i==4
+        s=[1 4 7];
+      elseif i==5
+        s=[2 5 8];
+      elseif i==6
+        s=[3 6 9];
+      elseif i==7
+        s=[1 5 9];
+      elseif i==8
+        s=[3 5 7];
+      end
+
+  %check row to see if X can win
+      if(board(s(1)) ~= 2 && board(s(2)) ~= 2 && board(s(3)) ~= 2)
+          xscore = xscore + 1;
+      end
+      %check row to see if O can win
+      if(board(s(1)) ~= 1 && board(s(2)) ~= 1 && board(s(3)) ~= 1)
+          oscore = oscore + 1;
+      end
+
+      i=i+1;
+  end
+  eval = xscore - oscore;
 
 function [ blank_indices ] = get_zeros( board )
     zero_loc = 1;
