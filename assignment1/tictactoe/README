@@ -9,7 +9,9 @@ The first is "game_tree" which stores the following arrays each as a row:
   node_scores - where node_scores(i) = the evaluated score of node i
   node_parents - where node_parents(i) = the parent of node i
   node_levels - where node_levels(i) = the depth of node i
+  is_node_leaf - where is_node_leaf(i) = 1 if the node is a leaf, 0 else
 
 The second one is "nodes" where nodes(i,:) describes the board for that node
 
 There is also a "moves" array which describes where the piece must be placed in order to get to node i.
+
