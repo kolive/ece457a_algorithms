@@ -325,49 +325,48 @@ end
 %    end
 %end
 
-function game_tree = create_game_tree(board)
+function [game_tree, nodes] = create_game_tree(board)
   % 3 matrixes, one for each node and it's score, one for each node and
   % it's parent, one for each node and it's level
-  nodes = []
+  nodes = [board];
   node_scores = [];
-  node_parents = [];
-  node_levels = [];
-  node_id = 0;
- 
-  node_parents = [node_parents, -1];
-  node_scores = [node_scores, eval(board)];
-  node_levels = [node_levels, 0];
-  node_parents = [node_parents, -1];
+  node_parents = [-1];
+  node_levels = [0];
+  node_id = 1;
   
   %init generation
-  nodes = [ nodes , board ];
   %for each node in nodes
-  while( node_id < size(nodes,2) )        
+  while(node_id <= size(nodes,1))  
+      node_id
       %score the node
-      node_scores = [node_scores, eval(nodes(node_id))]; 
-      
-      %for each child of the current node
-      % set the node = [node, new node]
-      % set the node_parents = [node_parents, node_id]; 
-      % set the node_levels = [node_levels, node_levels(node_id)+1]; 
-      
+      node_scores = [node_scores, eval_board(nodes(node_id,:))]; 
+      if(node_levels(node_id) < 4)
+        zeroes = get_zeros(nodes(node_id,:));
+      else
+        zeroes = [];
+      end
+      for k = zeroes
+        newboard = nodes(node_id,:);
+        if(mod((node_levels(1,node_id)+1), 2) == 1)
+            newboard(k) = 1;
+        else
+            newboard(k) = 2;
+        end
+        nodes = [nodes; newboard];
+        node_parents = [node_parents, node_id];
+        node_levels = [node_levels, node_levels(node_id)+1];
+      end
+     
       node_id = node_id + 1;
   end
-  %set the level of the node
-  %increment node counter
-  %calculate children, push into nodes - How to keep track of node level? Use parent's
-  %level + 1? 
-  %check if there are more nodes to investigate (i.e., if current node
-  %index < max node index
+  game_tree = [ node_scores ; node_parents ; node_levels ];
   
-  %todo: check syntax
-  game_tree = [ nodes ; node_scores ; node_parents ; node_levels ];
   
 
 %(* Initial call for maximizing player *)
 %minimax(origin, depth, TRUE)
 function optimal_score = minimax(board)
-  create_game_tree();
+  mytree = create_game_tree(board);
   optimal_score = 1;
 
 function child = get_child_with_score(optimal_score)
@@ -424,7 +423,9 @@ function decision(handles)
   picksquare(handles,num);
 
 function eval = eval_board(board)
-%try to win, if u can't try to block
+i = 1;
+xscore = 0;
+oscore = 0;
 while i<=8
     if i==1     
     	s=[1 2 3];
@@ -443,7 +444,7 @@ while i<=8
     elseif i==8
     	s=[3 5 7];
     end
-
+    
 	%check row to see if X can win
     if(board(s(1)) ~= 2 && board(s(2)) ~= 2 && board(s(3)) ~= 2)
         xscore = xscore + 1;
@@ -458,7 +459,7 @@ end
 eval = xscore - oscore;
 
 function [ blank_indices ] = get_zeros( board )
-    zero_loc = 0;
+    zero_loc = 1;
     blank_indices = [];
     for b = board
         if(b == 0)
@@ -466,7 +467,7 @@ function [ blank_indices ] = get_zeros( board )
         end
         zero_loc = zero_loc + 1;
     end
-end
+
 
   % --- Executes during object creation, after setting all properties.
   function MTTT_CreateFcn(hObject, eventdata, handles)
