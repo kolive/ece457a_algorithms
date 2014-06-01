@@ -457,6 +457,17 @@ while i<=8
 end
 eval = xscore - oscore;
 
+function [ blank_indices ] = get_zeros( board )
+    zero_loc = 0;
+    blank_indices = [];
+    for b = board
+        if(b == 0)
+            blank_indices = [blank_indices, zero_loc];
+        end
+        zero_loc = zero_loc + 1;
+    end
+end
+
   % --- Executes during object creation, after setting all properties.
   function MTTT_CreateFcn(hObject, eventdata, handles)
   % hObject    handle to MTTT (see GCBO)
