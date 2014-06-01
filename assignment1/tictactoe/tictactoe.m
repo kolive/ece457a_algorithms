@@ -342,7 +342,7 @@ function optimal_score = minimax(game_tree)
 
   %end at first child of parent
   while(i >= 2)
-    % if it's odd, we want to max, if it's even we want to min
+    % if the depth is odd, we want to max, if it's even we want to min
     if(mmscores(parents(i)) == -999)
         mmscores(parents(i)) = scores(i);
     else
@@ -356,22 +356,22 @@ function optimal_score = minimax(game_tree)
     i = i - 1;
   end
 
-  optimal_score = mmscores(1);
+  optimal_score = mmscores;
 
-function tile = get_tile_from_score(optimal_score, scores, moves)
+function tile = get_tile_from_score(optimal_score, moves)
   %first node is parent, so we skip that
   node_id = 2;
 
   % for the scores with depth 1, find the one that matches optimal score
-  while(node_id <= size(scores,2))
-    if (optimal_score == scores(node_id))
+  while(node_id <= size(optimal_score,2))
+    if (optimal_score(1) == optimal_score(node_id))
       break;
     end
 
     node_id = node_id + 1;
   end
 
-  % compare with current row to see what's different and return that child
+  %take the move that corresponds to the best score
   tile = moves(node_id);
 
 
@@ -385,7 +385,7 @@ function decision(handles)
 
   [game_tree, nodes, moves] = create_game_tree(board);
   optimal_score = minimax(game_tree);
-  num = get_tile_from_score(optimal_score, game_tree(1, :), moves);
+  num = get_tile_from_score(optimal_score, moves);
 
   picksquare(handles,num);
 
