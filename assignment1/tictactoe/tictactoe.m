@@ -290,25 +290,30 @@ function [game_tree, nodes, moves] = create_game_tree(board)
   node_id = 1;
   moves = [-1];
 
-  %init generation
   %for each node in nodes
   while(node_id <= size(nodes,1))
       %score the node
       node_scores = [node_scores, eval_board(nodes(node_id,:))];
+
+      %limiting depth to 5 so that the AI responds in a reasonable amount of time is feasible
       if(node_levels(node_id) < 4)
         zeroes = get_zeros(nodes(node_id,:));
       else
         zeroes = [];
       end
+
       win = checkboard(nodes(node_id,:));
+
       if(win == 0)
           for k = zeroes
             newboard = nodes(node_id,:);
+
             if(mod((node_levels(1,node_id)+1), 2) == 1)
                 newboard(k) = 2;
             else
                 newboard(k) = 1;
             end
+
             moves = [moves, k];
             nodes = [nodes; newboard];
             node_parents = [node_parents, node_id];
@@ -318,19 +323,23 @@ function [game_tree, nodes, moves] = create_game_tree(board)
 
       node_id = node_id + 1;
   end
+
   game_tree = [ node_scores ; node_parents ; node_levels ];
 
 function optimal_score = minimax(game_tree)
-  levels = game_tree(3, :);
   scores = game_tree(1, :);
   parents = game_tree(2, :);
+  levels = game_tree(3, :);
 
   % start by looking at the deepest level
   i = size(scores,2);
-  
+
   %create an array which will hold the min/max score for each node
   mmscores = ones(1, size(scores,2));
-  mmscores = mmscores * -999; %initialize  to -999 so we know when to just take the value of the child
+
+  %initialize  to -999 so we know when to just take the value of the child
+  mmscores = mmscores * -999;
+
   %end at first child of parent
   while(i >= 2)
     % if it's odd, we want to max, if it's even we want to min
@@ -346,12 +355,13 @@ function optimal_score = minimax(game_tree)
 
     i = i - 1;
   end
+
   optimal_score = mmscores(1);
 
 function tile = get_tile_from_score(optimal_score, scores, moves)
-
   %first node is parent, so we skip that
   node_id = 2;
+
   % for the scores with depth 1, find the one that matches optimal score
   while(node_id <= size(scores,2))
     if (optimal_score == scores(node_id))
