@@ -280,7 +280,7 @@ function newgame_Callback(hObject, eventdata, handles)
       decision(handles);
   end
 
-function [game_tree, nodes] = create_game_tree(board)
+function [game_tree, nodes, moves] = create_game_tree(board)
   % 3 matrices, one for each node and it's score, one for each node and
   % it's parent, one for each node and it's level
   nodes = [board];
@@ -288,6 +288,7 @@ function [game_tree, nodes] = create_game_tree(board)
   node_parents = [-1];
   node_levels = [0];
   node_id = 1;
+  moves = [-1];
 
   %init generation
   %for each node in nodes
@@ -299,52 +300,60 @@ function [game_tree, nodes] = create_game_tree(board)
       else
         zeroes = [];
       end
-      for k = zeroes
-        newboard = nodes(node_id,:);
-        if(mod((node_levels(1,node_id)+1), 2) == 1)
-            newboard(k) = 2;
-        else
-            newboard(k) = 1;
-        end
-        nodes = [nodes; newboard];
-        node_parents = [node_parents, node_id];
-        node_levels = [node_levels, node_levels(node_id)+1];
+      win = checkboard(nodes(node_id,:));
+      if(win == 0)
+          for k = zeroes
+            newboard = nodes(node_id,:);
+            if(mod((node_levels(1,node_id)+1), 2) == 1)
+                newboard(k) = 2;
+            else
+                newboard(k) = 1;
+            end
+            moves = [moves, k];
+            nodes = [nodes; newboard];
+            node_parents = [node_parents, node_id];
+            node_levels = [node_levels, node_levels(node_id)+1];
+          end
       end
 
       node_id = node_id + 1;
   end
   game_tree = [ node_scores ; node_parents ; node_levels ];
 
-function optimal_score = minimax(game_tree, nodes)
+function optimal_score = minimax(game_tree)
   levels = game_tree(3, :);
   scores = game_tree(1, :);
-
-  %since starting depth is 4, it'll be a min, so we want to instantiate optimal_score really high
-  optimal_score = 9999;
+  parents = game_tree(2, :);
 
   % start by looking at the deepest level
-  i = size(scores);
-
+  i = size(scores,2);
+  
+  %create an array which will hold the min/max score for each node
+  mmscores = ones(1, size(scores,2));
+  mmscores = mmscores * -999; %initialize  to -999 so we know when to just take the value of the child
   %end at first child of parent
   while(i >= 2)
-    % TODO: set optimal score based on the parent..?
     % if it's odd, we want to max, if it's even we want to min
-    if (mod(levels(i),2) == 0)
-
+    if(mmscores(parents(i)) == -999)
+        mmscores(parents(i)) = scores(i);
     else
-
+        if (mod(levels(i),2) == 0)
+            mmscores(parents(i)) = min(mmscores(parents(i)), scores(i));
+        else
+            mmscores(parents(i)) = max(mmscores(parents(i)), scores(i));
+        end
     end
 
     i = i - 1;
   end
+  optimal_score = mmscores(1);
 
-function tile = get_tile_from_score(optimal_score, nodes, scores, levels)
+function tile = get_tile_from_score(optimal_score, scores, moves)
 
   %first node is parent, so we skip that
   node_id = 2;
-
   % for the scores with depth 1, find the one that matches optimal score
-  while(levels(node_id) == 1)
+  while(node_id <= size(scores,2))
     if (optimal_score == scores(node_id))
       break;
     end
@@ -352,11 +361,8 @@ function tile = get_tile_from_score(optimal_score, nodes, scores, levels)
     node_id = node_id + 1;
   end
 
-  best_board = nodes(node_id, :);
-  current_board = nodes(1,:);
-
   % compare with current row to see what's different and return that child
-  tile = find(best_board - current_board);
+  tile = moves(node_id);
 
 
 % if there's no winning spot, switch to the view of the opponent and try to
@@ -367,9 +373,9 @@ function decision(handles)
   num=0;
   pause(0.5);
 
-  [game_tree, nodes] = create_game_tree(board);
-  optimal_score = minimax(game_tree, nodes);
-  num = get_tile_from_score(optimal_score, nodes, game_tree(1,:), game_tree(3,:));
+  [game_tree, nodes, moves] = create_game_tree(board);
+  optimal_score = minimax(game_tree);
+  num = get_tile_from_score(optimal_score, game_tree(1, :), moves);
 
   picksquare(handles,num);
 
