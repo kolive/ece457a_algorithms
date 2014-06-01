@@ -319,12 +319,16 @@ function optimal_score = minimax(game_tree, nodes)
   levels = game_tree(3, :);
   scores = game_tree(1, :);
 
+  %since starting depth is 4, it'll be a min, so we want to instantiate optimal_score really high
+  optimal_score = 9999;
+
   % start by looking at the deepest level
   i = size(scores);
 
   %end at first child of parent
   while(i >= 2)
-    % TODO: if it's even, we want to max, if it's odd we want to min
+    % TODO: set optimal score based on the parent..?
+    % if it's odd, we want to max, if it's even we want to min
     if (mod(levels(i),2) == 0)
 
     else
@@ -333,9 +337,6 @@ function optimal_score = minimax(game_tree, nodes)
 
     i = i - 1;
   end
-
-  % TODO: return the optimal score
-  optimal_score = 4;
 
 function tile = get_tile_from_score(optimal_score, nodes, scores, levels)
 
