@@ -333,6 +333,75 @@ function [game_tree, nodes, moves] = create_game_tree(board)
 
   game_tree = [ node_scores ; node_parents ; node_levels; is_node_leaf ];
 
+function tile = ab_pruning(board)
+  % 3 matrices, one for each node and it's score, one for each node and
+  % it's parent, one for each node and it's level
+  nodes = [board];
+  node_scores = [];
+  node_parents = [-1];
+  node_levels = [0];
+  node_id = 1;
+  moves = [-1];
+  is_node_leaf = [];
+  
+  %how could we do ab pruning?
+  % option 1:
+  %     keep a variable which keeps track of the current depth
+  %     only process nodes at that depth, if node has a child, depth get
+  %     increased
+  %     if node has no children, search list from start until we get to the
+  %     first unexplored node and reset max depth 
+  %         <- need a list to indicate node as expanded
+  %         <- need to add bad values to the other arrays even if a node
+  %         isn't currently being explored so the indexing is preserved
+  %     at a leaf node, calculate alpha/beta values, propogate the scores
+  %     upwards
+  %     use pruning criteria when deciding to spawn chilren
+
+  %for each node in nodes
+  while(node_id <= size(nodes,1))
+      %score the node
+      node_scores = [node_scores, eval_board(nodes(node_id,:))];
+
+      %limiting depth to 4 so that the AI responds in a reasonable amount of time
+      if(node_levels(node_id) < 4)
+        win = checkboard(nodes(node_id,:));
+        if(win ~= 0)
+            is_node_leaf = [is_node_leaf, 1];
+        else
+            is_node_leaf = [is_node_leaf, 0];
+        end
+        zeroes = get_zeros(nodes(node_id,:));
+      else
+        is_node_leaf = [is_node_leaf, 1];
+        zeroes = [];
+      end
+
+      if(win == 0)
+          for k = zeroes
+            newboard = nodes(node_id,:);
+
+            % Choose an X or an O depending on whose turn it is
+            if(mod(node_levels(1,node_id), 2) == 0)
+                newboard(k) = 2;
+            else
+                newboard(k) = 1;
+            end
+
+            moves = [moves, k];
+            nodes = [nodes; newboard];
+            node_parents = [node_parents, node_id];
+            node_levels = [node_levels, node_levels(node_id)+1];
+          end
+      end
+
+      node_id = node_id + 1;
+  end
+
+  game_tree = [ node_scores ; node_parents ; node_levels; is_node_leaf ];
+  tile = 3;
+
+  
 function optimal_score = minimax(game_tree)
   scores = game_tree(1, :);
   parents = game_tree(2, :);
