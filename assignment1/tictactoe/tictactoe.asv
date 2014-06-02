@@ -344,14 +344,19 @@ function tile = ab_pruning(board)
   moves = [-1];
   is_node_leaf = [];
   
-  %how could we do dfs?
+  %how could we do ab pruning?
   % option 1:
   %     keep a variable which keeps track of the current depth
   %     only process nodes at that depth, if node has a child, depth get
   %     increased
   %     if node has no children, search list from start until we get to the
-  %     first unexplored node and reset max depth <- need a list to
-  %     indicate a node as expanded
+  %     first unexplored node and reset max depth 
+  %         <- need a list to indicate node as expanded
+  %         <- need to add bad values to the other arrays even if a node
+  %         isn't currently being explored so the indexing is preserved
+  %     at a leaf node, calculate alpha/beta values, propogate the scores
+  %     upwards
+  %     use pruning criteria when deciding to spawn chilren
 
   %for each node in nodes
   while(node_id <= size(nodes,1))
@@ -373,6 +378,7 @@ function tile = ab_pruning(board)
       end
 
       if(win == 0)
+          zeroes = get_zeros(nodes(node_id,:));
           for k = zeroes
             newboard = nodes(node_id,:);
 
@@ -448,6 +454,62 @@ function tile = get_tile_from_score(optimal_score, moves)
 
   %take the move that corresponds to the best score
   tile = moves(node_id);
+    
+  function [best_score, best_move] = minmax(player, board, depth)
+      win = checkboard(board);
+      if(size(get_zeros(board), 1) == 0)
+          best_score = eval_board(board);
+          best_move = -1;
+      elseif(win ~= 0)
+        if(win == 1)
+            best_score = -10;
+            best_move = -1;
+        else
+            best_score = 10;
+            best_move = -1;
+        end
+      else
+        children = [];
+        change = [];
+        zeroes = get_zeros(board);
+        for k = zeroes
+            newboard = board;
+            % Choose an X or an O depending on whose turn it is
+            if(player == 0)
+                newboard(k) = 2;
+            else
+                newboard(k) = 1;
+            end
+            children = [children; newboard];
+            change = [change; k];
+        end
+          
+        if(player == 0 && size(children,1)>0)
+            scores = [];
+            for i = 1:size(children,1)
+                scores = [scores, minmax(1, children(i,:), depth+1)];
+            end
+            best_score = max(scores);
+            if(depth == 1)
+                best_move = find(scores==max(scores));
+                best_move = best_move(1);
+            end
+        else
+            if(player == 1 && size(children,1)>0)
+              scores = [];
+              for i = 1:size(children,1)
+                  scores = [scores, minmax(0, children(i,:), depth+1)];
+              end
+              best_score = min(scores);
+              if(depth == 1)
+                 best_move = find(scores==min(scores));
+                 best_move = children(best_move(1), :) - board
+              end
+            end
+        end
+      end
+      
+      
 
 
 % if there's no winning spot, switch to the view of the opponent and try to
@@ -458,10 +520,11 @@ function decision(handles)
   num=0;
   pause(0.5);
 
-  [game_tree, nodes, moves] = create_game_tree(board);
-  optimal_score = minimax(game_tree);
-  num = get_tile_from_score(optimal_score, moves);
-
+  %[game_tree, nodes, moves] = create_game_tree(board);
+  %optimal_score = minimax(game_tree);
+  %num = get_tile_from_score(optimal_score, moves);
+  [best_score, best_move] = minmax(0, board, 0);
+  num = best_move;
   picksquare(handles,num);
 
 function eval = eval_board(board)

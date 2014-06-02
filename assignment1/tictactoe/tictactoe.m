@@ -378,6 +378,7 @@ function tile = ab_pruning(board)
       end
 
       if(win == 0)
+          zeroes = get_zeros(nodes(node_id,:));
           for k = zeroes
             newboard = nodes(node_id,:);
 
@@ -453,6 +454,66 @@ function tile = get_tile_from_score(optimal_score, moves)
 
   %take the move that corresponds to the best score
   tile = moves(node_id);
+    
+  function [best_score, best_move] = minmax(player, board, depth)
+      win = checkboard(board);
+      if(size(get_zeros(board), 1) == 0)
+          best_score = eval_board(board);
+          best_move = -1;
+      elseif(win ~= 0)
+        if(win == 1)
+            best_score = -10;
+            best_move = -1;
+        else
+            best_score = 10;
+            best_move = -1;
+        end
+      else
+        children = [];
+        zeroes = get_zeros(board);
+        for k = zeroes
+            newboard = board;
+            % Choose an X or an O depending on whose turn it is
+            if(player == 0)
+                newboard(k) = 2;
+            else
+                newboard(k) = 1;
+            end
+            children = [children; newboard];
+        end
+          
+        if(player == 0 && size(children,1)>0)
+            scores = [];
+            for i = 1:size(children,1)
+                [bs, bm] =  minmax(1, children(i,:), depth+1);
+                scores = [scores, bs];
+            end
+            best_score = max(scores);
+            if(depth == 1)
+                best_move = find(scores==max(scores));
+                best_move = find(children(best_move(1), :) - board);
+            else
+                best_move = -1;
+            end
+        else
+            if(player == 1 && size(children,1)>0)
+              scores = [];
+              for i = 1:size(children,1)
+                  [bs, bm] =  minmax(0, children(i,:), depth+1);
+                  scores = [scores, bs];
+              end
+              best_score = min(scores);
+              if(depth == 1)
+                 best_move = find(scores==min(scores));
+                 best_move = find(children(best_move(1), :) - board);
+              else
+                 best_move = -1;
+              end
+            end
+        end
+      end
+      
+      
 
 
 % if there's no winning spot, switch to the view of the opponent and try to
@@ -463,10 +524,11 @@ function decision(handles)
   num=0;
   pause(0.5);
 
-  [game_tree, nodes, moves] = create_game_tree(board);
-  optimal_score = minimax(game_tree);
-  num = get_tile_from_score(optimal_score, moves);
-
+  %[game_tree, nodes, moves] = create_game_tree(board);
+  %optimal_score = minimax(game_tree);
+  %num = get_tile_from_score(optimal_score, moves);
+  [best_score, best_move] = minmax(0, board, 1);
+  num = best_move;
   picksquare(handles,num);
 
 function eval = eval_board(board)
