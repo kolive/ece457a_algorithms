@@ -1,30 +1,6 @@
-Our AI plays tic tac toe using minimax with AB pruning where the heuristic is the one discussed in class - number of possible winning moves remaining minus number of possible winning moves for opponent remaining.
-We only look at the game tree graph 4 levels deep since otherwise the AI takes an unreasonable amount of time to respond due to the large number of computations. This results in an imperfect AI that doesn't necessarily always win since it can't see far enough to know the very optimal moves.
+Our AI plays tic tac toe using minimax with AB pruning where the heuristic is a
+modified version of the one discussed in class - number of possible winning
+moves remaining minus number of possible winning moves for opponent remaining.
+It adds to that heuristic by giving winning moves extra score bonuses and losing
+moves extra penalties.
 
-Below are descriptions of the main functions we wrote:
-
-create_game_tree(board)
-=======================
-Takes a starting game state and generates a game tree for analysis in order to determine the optimal next move the AI should take.
-
-It returns three arrays
-
-The first is "game_tree" which stores the following arrays each as a row:
-  node_scores - where node_scores(i) = the evaluated score of node i
-  node_parents - where node_parents(i) = the parent of node i
-  node_levels - where node_levels(i) = the depth of node i
-  is_node_leaf - where is_node_leaf(i) = 1 if the node is a leaf, 0 else
-
-The second one is "nodes" where nodes(i,:) describes the board for that node
-
-There is also a "moves" array which describes where the piece must be placed in order to get to node i.
-
-
-minimax(game_tree)
-=================
-Takes in the game_tree and performs the minimax algorithm and returns the new scoring tree with the minimax weighting
-
-
-get_tile_from_score(optimal_score, moves)
-=========================================
-Takes in the minimax weighted scoring tree and moves to return the tile that should be played for the best move
