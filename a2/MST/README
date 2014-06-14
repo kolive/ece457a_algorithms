@@ -1,0 +1,9 @@
+To do TabuSearch, run the following commands:
+
+>> load Units100.mat
+>> TabuLength = 5;
+>> NumIterations = 5;
+>> [BestSoln, BestSolnCost] = TabuSearch(Graph, TabuLength, NumIterations, 'GenInitialST', 'GetBestNeighbourST');
+
+TabuLength is the length of the Tabu list. Told in assignment to use 5, 10, 15, 25, 50
+NumIterations is the maximum number of iterations. Not sure about this one, I just tried random numbers
