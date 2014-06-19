@@ -96,14 +96,14 @@ for e1 = 1:NumTreeEdges
     NewST(N2(BestEdge), N1(BestEdge)) = 1;
 
     % Caclulate the cost of the new spanning tree
+    % TODO: modify this to include splitter costs:
+    % For each vertex, if there are > 2 edges, add 10 / (1 + exp(-n/10)) to the cost, where n = num edges
+    % How determine number of edges connected to each vertex?
+    % nnz(NewST(i,:)) is the number of edges connected to 1. Is there a way to do that on every vertex without a loop through all ints?
+    % .* does component wise multiplication, 
+    % i.e., [1 2 3] .* [1 2 3] = [1 4 9]
+    % what is graph?
     NewSTCost = (sum(sum(Graph .* NewST))) / 2;
-    
-    for i=1:size(NewST,1)
-        splitcount = nnz(NewST(:,i));
-        if(splitcount > 2)
-            NewSTCost = NewSTCost + 10/(1 + exp(-splitcount/10));
-        end
-    end
     
     % 2. Check if the edge to be removed (e1) is in the tabu list
     % Second condition is aspiration criteria
