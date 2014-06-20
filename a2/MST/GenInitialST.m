@@ -51,6 +51,13 @@ ST = ST + ST';
 % Calculate the cost of the spanning tree
 STCost = sum(sum(Graph .* ST)) / 2;
 
+for i=1:size(ST,1)
+    splitcount = nnz(ST(:,i));
+    if(splitcount > 2)
+        STCost = STCost + 10/(1 + exp(-splitcount/10));
+    end
+end
+
 % Initialize the tabu list. The tabu list represents that set of edges
 % that can't be deleted to find the neighbourhood of the current solution
 TabuEdges = sparse(NumNodes, NumNodes);
