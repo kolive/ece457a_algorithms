@@ -53,6 +53,7 @@ end % end for j
 % Record the current best
 bestfun(i)=max(fitness);
 % WTF? Why the mean?
+bestfun(i)==fitness
 sol(bestfun(i)==fitness)
 bestsol(i)=mean(sol(bestfun(i)==fitness));
 end

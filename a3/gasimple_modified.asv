@@ -6,9 +6,8 @@ function [lastsol, bestfun, count]=gasimple_modified(ndimensions, resolution)
 global solnew sol pop popnew fitness fitold f range;
 
 % Add as arguments later?
-f = @(x)(1/(1+a3_funct_test(x)));
-range=[-1 1];
-range=[-3 0]; % Range/Domain
+f = @(x)(1/(1+a3_funct(x)));
+range=[-1 1]; % Range/Domain
 
 % throw error on invalid arguments?
 
@@ -60,12 +59,13 @@ end
 end % end for j
 % Record the current best fitness
 bestfun(i)=max(fitness);
+lastsol = 
 end
 % Display results
-[~, lastsol_index] = max(fitness);
-lastsol = sol(:, lastsol_index);
 set(gcf,'color','w');
-plot(bestfun); title('Fitness');
+% So what this function returns is an array of the correct values?
+%subplot (2,1,1); plot(bestsol); title('Best estimates');
+subplot(2,1,2); plot(bestfun); title('Fitness');
 
 % All the sub functions
 % generation of the initial population
