@@ -6,20 +6,18 @@ function [lastsol, bestfun, count]=gasimple_modified(ndimensions, resolution)
 global solnew sol pop popnew fitness fitold f range;
 
 % Add as arguments later?
-f = @(x)(1/(1+a3_funct_test(x)));
+f = @(x)(1/(1+a3_funct(x)));
 range=[-1 1];
-range=[-3 0]; % Range/Domain
-
 % throw error on invalid arguments?
 
 % Initializing the parameters
 rand('state' ,0'); % Reset the random generator
 popsize=20; % Population size
-MaxGen=100; % Max number of generations
+MaxGen=200; % Max number of generations
 count=0;    % counter
 nsite=2;    % number of mutation sites
 pc=0.95;    % Crossover probability
-pm=0.05;    % Mutation probability
+pm=0.1;    % Mutation probability
 %nsbit=16;   % String length (bits)
 nsbit=resolution;
 % Generating the initial population
