@@ -5,11 +5,11 @@ Extract all files into your active folder of Matlab and run the code `[lastsol, 
 
 Arguments
 =========
-The arugments for the function are `nvariables` which is the number of x values desired to be plugged into the function to approximate and `resolution` which is the length of the binary string to use as the gene for running the genetic algorithm. For the function to run properly, `resolution` must be divisable by `nvariables + 1`.
+The arguments for the function are `nvariables` which is the number of x values desired to be plugged into the function to approximate and `resolution` which is the length of the binary string to use as the gene for running the genetic algorithm. For the function to run properly, `resolution` must be divisable by `nvariables + 1`.
 
 Return Values
 =============
-The relevant return values are `lastsol` and `bestfun`. `bestfun` returns the fitness of the best solution as it evolved over time, while `lastsol` returns the values that were input in the last iteration to get the best result. To see what value the best result returns, you can run `a3_funct(lastsol)`.
+The relevant return values are `lastsol` and `bestfun`. `bestfun` returns the fitness of the best solution as it evolved over time, while `lastsol` returns one of the values that were input in the last iteration to get the best result (since there can be multiple best values, but this isn't a concern for us). To see what value the best result returns, you can run `a3_funct(lastsol)`.
 
 What was modified
 =================
