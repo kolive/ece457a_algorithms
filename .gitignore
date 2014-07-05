@@ -4,6 +4,7 @@
 *.war
 *.ear
 *.swp
+*.asv
 
 hs_err_pid*
 
