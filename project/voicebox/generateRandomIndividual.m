@@ -1,3 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Author: Kyle Olive
+%  Date: Sometime after the fall of Rome
+%  Comments: If you don't know what this does... ask Kyle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [individual]=generateRandomIndividual(duration)
     % currently, lets have this function generate a uniformly random value
     % within the range of each parameter

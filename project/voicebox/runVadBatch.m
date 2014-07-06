@@ -1,3 +1,8 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Author: Kyle Olive
+%  Date: Sometime after the fall of Rome
+%  Comments: If you don't know what this does... ask Kyle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [batchfitness] = runVadBatch(wavfilename, tagfilename, population)
     %reads the wav file, stores the data in y
     %fs is the sampling frequency, you need to pass the correct frequency
