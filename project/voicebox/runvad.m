@@ -3,11 +3,23 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [figh]=runvad(wavfilename, tagfilename, figh)
-    if(nargin < 3)
+function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilename, pp, figh)
+    if(nargin < 4)
         figh(1) = figure;
         figh(2) = figure;
         figh(3) = figure;
+    end
+    
+    if(nargin < 3)   
+        pp.of=2;   % overlap factor = (fft length)/(frame increment)
+        pp.pr=0.7;    % Speech probability threshold
+        pp.ts=0.1;  % mean talkspurt length (100 ms)
+        pp.tn=0.05; % mean silence length (50 ms)
+        pp.ti=10e-3;   % desired frame increment (10 ms)
+        pp.ri=0;       % round ni to the nearest power of 2
+        pp.ta=0.396;    % Time const for smoothing SNR estimate = -tinc/log(0.98) from [2]
+        pp.gx=1000;     % maximum posterior SNR = 30dB
+        pp.xn=0;        % minimum prior SNR = -Inf dB
     end
     %reads the wav file, stores the data in y
     %fs is the sampling frequency, you need to pass the correct frequency
@@ -18,7 +30,7 @@ function [figh]=runvad(wavfilename, tagfilename, figh)
     %vadsohn with default parameters on y, fs
     %other parameters should be passed in a matrix called pp, i think
     %I haven't tried that yet.
-    tags = vadsohn(y, fs);
+    tags = vadsohn(y, fs, 'a', pp);
     tags = [tags; 1.1];
     x1 = linspace(0, duration, size(tags,1));
     x1 = x1';
