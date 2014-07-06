@@ -1,4 +1,14 @@
-function runvad(wavfilename, tagfilename)
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%  Author: Kyle Olive
+%  Date: Sometime after the fall of Rome
+%  Comments: If you don't know what this does... ask Kyle
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+function [figh]=runvad(wavfilename, tagfilename, figh)
+    if(nargin < 3)
+        figh(1) = figure;
+        figh(2) = figure;
+        figh(3) = figure;
+    end
     %reads the wav file, stores the data in y
     %fs is the sampling frequency, you need to pass the correct frequency
     %to vahdson
@@ -20,21 +30,23 @@ function runvad(wavfilename, tagfilename)
     x2 = x2';
     
     %plot the two waveforms for comparison
-    figure;
-    s(1) = subplot(3,1,1);
+    figure(figh(1));
+    s(1) = subplot(3,1,3);
     plot(s(1), x1, tags);
-    title('Results of Vadsohn Analysis (top) vs. Given Tags (middle)');
     xlabel('Time (s)');
     ylabel('Tag Value');
     s(2) = subplot(3,1,2);  
     plot(s(2), x2, giventags);
+    title('Results of Vadsohn Analysis (bottom) vs. Given Tags (top)');
     xlabel('Time (s)');
     ylabel('Tag Value');
-    s(3) = subplot(3,1,3);
+    s(3) = subplot(3,1,1);
     t=0:1/fs:(length(y)-1)/fs; %get the duration for plotting
     plot(s(3), t, y);
     title('Actual speech waveform');
     xlabel('Time (s)');
+    
+    [fitness, breakdown, nad, figh(2:3)] = vadfitness(tags, giventags, duration, 1, figh(2:3));
     
     
 end
