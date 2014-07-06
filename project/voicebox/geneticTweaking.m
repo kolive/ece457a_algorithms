@@ -37,27 +37,29 @@ function [solutioncost, solution]=geneticTweaking(wavfilename, tagfilename)
         else
             convergecount = 4;
         end
+        pbestfitness = max(fitnesses) %hopefully this number goes up
+       
         
         %select mating pool by fitness proportional selection - stochastic
         %sampling
-        % we'll use steady state, so mate from a subset of population
-        % for now, I'll use 16
-        [selectedpop, rindex] = stochasticSamplingSelection(population, fitnesses, 16);
+        % lets try to use GA (steady state works too, just replace 50 with
+        % something < 50
+        [selectedpop, rindex] = stochasticSamplingSelection(population, fitnesses, 50);
 
         %generate children
-        [children] = generateChildren(selectedpop);
+        [population] = generateChildren(selectedpop);
 
-        %replace 16 random people who aren't parents with the new children
+        %replace 50 random people who aren't parents with the new children
         % TODO: use another replacement algorithms
-        indices = linspace(1, size(population,2), size(population,2));
-        eligible = setdiff(indices, rindex);
-        for i=1:size(rindex, 2)
-            ri = randi(size(eligible,2));
-            eligible = setdiff(eligible, ri); 
-            population(ri) = children(i);
-        end
+        % USED FOR Steady State
+       % indices = linspace(1, size(population,2), size(population,2));
+       % eligible = setdiff(indices, rindex);
+       % for i=1:size(rindex, 2)
+       %     ri = randi(size(eligible,2));
+       %     eligible = setdiff(eligible, ri); 
+       %     population(ri) = children(i);
+       % end
         
-        pbestfitness = max(fitnesses) %hopefully this number goes up
         iteration = iteration + 1
     end
     
