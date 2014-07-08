@@ -36,41 +36,41 @@ best=guess; % initially guessed values
 
 % Starting the simulated annealling
 while ((T > T_min) & (j <= max_rej) & E_new>F_min)
-i = i+1;
+  i = i+1;
 
-% Check if max numbers of run/accept are met
-if (i >= max_run) | (accept >= max_accept)
+  % Check if max numbers of run/accept are met
+  if (i >= max_run) | (accept >= max_accept)
 
-% Cooling according to a cooling schedule
-T = alpha*T;
-totaleval = totaleval + i;
+    % Cooling according to a cooling schedule
+    T = alpha*T;
+    totaleval = totaleval + i;
 
-% reset the counters
-i = 1; accept = 1;
-end
+    % reset the counters
+    i = 1; accept = 1;
+  end
 
-% Function evaluations at new locations
-  ns=guess+rand(1,2)*randn;
-  E_new = f(ns(1),ns(2));
-% Decide to accept the new solution
-DeltaE=E_new-E_old;
+  % Function evaluations at new locations
+    ns=guess+rand(1,2)*randn;
+    E_new = f(ns(1),ns(2));
+  % Decide to accept the new solution
+  DeltaE=E_new-E_old;
 
-% Accept if improved
-if (-DeltaE > Enorm)
-best = ns; E_old = E_new;
-accept=accept+1; j = 0;
-end
+  % Accept if improved
+  if (-DeltaE > Enorm)
+    best = ns; E_old = E_new;
+    accept=accept+1; j = 0;
+  end
 
-% Accept with a small probability if not improved
-if (DeltaE<=Enorm & exp(-DeltaE/(k*T))>rand );
-best = ns; E_old = E_new;
-accept=accept+1;
-else
-  j=j+1
-end
+  % Accept with a small probability if not improved
+  if (DeltaE<=Enorm & exp(-DeltaE/(k*T))>rand );
+    best = ns; E_old = E_new;
+    accept=accept+1;
+  else
+    j=j+1
+  end
 
-% Update the estimated optimal solution
-f_opt=E_old;
+  % Update the estimated optimal solution
+  f_opt=E_old;
 end
 
 % Display the final results

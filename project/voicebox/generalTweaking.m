@@ -4,6 +4,10 @@
 
 %TODO: create a new file for your own algorithm and rename it to be what your algorithm is
 function [solutioncost, solution]=generalTweaking(wavfilename, tagfilename)
+    fig(1) = figure;
+    fig(2) = figure;
+    fig(3) = figure;
+
     iterationmax = 100;
 
     [y, fs] = wavread(wavfilename);
@@ -20,9 +24,9 @@ function [solutioncost, solution]=generalTweaking(wavfilename, tagfilename)
         %TODO: generate next solution through your algorithm
 
         iteration = iteration + 1;
+        [solutioncost] = min(optimalities);
     end
 
-    [solutioncost] = max(fitnesses);
-    runvad(wavfilename, tagfilename, solution);
+    runvad(wavfilename, tagfilename, fig, solution);
 end
 
