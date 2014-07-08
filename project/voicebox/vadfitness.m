@@ -31,7 +31,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
     %dont line up perfectly with the rtags, though this is a small chunk of
     %time so error should be neglible
     uad = duration - analysisrange * vchunksize;
-    
+
     %initialize error types
     fec = 0;
     msc = 0;
@@ -69,7 +69,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
               fecmode = 0;
               mscmode = 1;
           end
-          
+
        end
 
        %if fecmode or mscmode is on and there is an error,
@@ -103,7 +103,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
           %set FEC detection mode on
           overmode = 1;
        end
-       if((overmode == 1 || ndsmode == 1) && (rtags(i) == vtags(j) || rtags(i) == 1)) 
+       if((overmode == 1 || ndsmode == 1) && (rtags(i) == vtags(j) || rtags(i) == 1))
           %we've either entered a speech zone or detection stopped so no longer
           %OVER and now into NDS region
           if(rtags(i) == 1)
@@ -113,20 +113,20 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
               ndsmode = 1;
               overmode = 0;
           end
-        
+
        end
 
-       %if overmode or ndsmode is on and there's an error, classify it as the 
+       %if overmode or ndsmode is on and there's an error, classify it as the
        %correct error
        if((overmode == 1 || ndsmode == 1) && rtags(i) ~= vtags(j))
            if(ndsmode == 1)
-               nds = nds + vchunksize;           
+               nds = nds + vchunksize;
                ndsplot(j) = 1;
            elseif(overmode == 1)
                over = over + vchunksize;
                overplot(j) = 1;
            end
-       end     
+       end
 
        if(mod(j,ocount) == 0)
            %time to increment the real chunk counter
@@ -142,7 +142,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
     %our search algorithms
     %we can use the plots to generate a video and show how our solution reaches
     %optimality
-    if(plotenable == 1)    
+    if(plotenable == 1)
         rtimeplot = rtimeplot';
         vtimeplot = vtimeplot';
         %plot the two basband waveforms and full error waveform
@@ -152,7 +152,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
         title('"Good" Tags');
         xlabel('Time (s)');
         ylabel('Tag Value');
-        s(2) = subplot(3,1,2);  
+        s(2) = subplot(3,1,2);
         plot(s(2), vtimeplot, vtags');
         title('Vadsohn Tags');
         xlabel('Time (s)');
@@ -169,7 +169,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
 
         %plot the four seperate errors
         figure(figh(2));
-        %Hacks to make the graph look nice 
+        %Hacks to make the graph look nice
         %because I don't know how to plot in matlab
         fecplot = [fecplot 1.1];
         mscplot = [mscplot 1.1];
@@ -181,7 +181,7 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
         title('FEC Error');
         xlabel('Time (s)');
         ylabel('Erroneous Tag');
-        s(2) = subplot(4,1,2);  
+        s(2) = subplot(4,1,2);
         plot(s(2), vtimeplot, mscplot');
         title('MSC Error');
         xlabel('Time (s)');

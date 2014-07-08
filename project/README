@@ -1,1 +1,8 @@
-This is the code project for my Master of Engineering research at NTU. If you want to use any code in your publication and/or any other kind of project, please drop me a note at pckben@gmail.com
+Getting started for your part of the project:
+
+1. Set your path in MATLAB to the voicebox folder
+
+2. See geneticTweaking.m for how Kyle did his part
+
+3. See the doc on Google Drive if you need further understanding of things
+

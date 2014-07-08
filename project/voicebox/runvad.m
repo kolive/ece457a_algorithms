@@ -3,14 +3,14 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilename, pp, figh)
-    if(nargin < 4)
+function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilename, figh, pp)
+    if(nargin < 3)
         figh(1) = figure;
         figh(2) = figure;
         figh(3) = figure;
     end
-    
-    if(nargin < 3)   
+
+    if(nargin < 4)
         pp.of=2;   % overlap factor = (fft length)/(frame increment)
         pp.pr=0.7;    % Speech probability threshold
         pp.ts=0.1;  % mean talkspurt length (100 ms)
@@ -26,7 +26,7 @@ function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilena
     %to vahdson
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
-    
+
     %vadsohn with default parameters on y, fs
     %other parameters should be passed in a matrix called pp, i think
     %I haven't tried that yet.
@@ -34,20 +34,20 @@ function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilena
     tags = [tags; 1.1];
     x1 = linspace(0, duration, size(tags,1));
     x1 = x1';
-    
+
     %read in the given tags to do a comparison
     giventags = dlmread(tagfilename);
     giventags = [giventags; 1.1];
     x2 = linspace(0, duration, size(giventags,1));
     x2 = x2';
-    
+
     %plot the two waveforms for comparison
     figure(figh(1));
     s(1) = subplot(3,1,3);
     plot(s(1), x1, tags);
     xlabel('Time (s)');
     ylabel('Tag Value');
-    s(2) = subplot(3,1,2);  
+    s(2) = subplot(3,1,2);
     plot(s(2), x2, giventags);
     title('Results of Vadsohn Analysis (bottom) vs. Given Tags (top)');
     xlabel('Time (s)');
@@ -57,8 +57,8 @@ function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilena
     plot(s(3), t, y);
     title('Actual speech waveform');
     xlabel('Time (s)');
-    
+
     [fitness, breakdown, nad, figh(2:3)] = vadfitness(tags, giventags, duration, 1, figh(2:3));
-    
-    
+
+
 end
