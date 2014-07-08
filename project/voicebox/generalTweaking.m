@@ -2,14 +2,15 @@
 %  Author: Yo Mama
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [solutioncost, solution]=saTweaking(wavfilename, tagfilename)
+%TODO: create a new file for your own algorithm and rename it to be what your algorithm is
+function [solutioncost, solution]=generalTweaking(wavfilename, tagfilename)
     iterationmax = 100;
 
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
 
-    %TODO: generate your initial solution
-    %solution = ??? (generateRandomIndividual for example)
+    % generate your initial solution
+    solution = genInitialSolution();
 
     %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     iteration = 0;
@@ -18,7 +19,7 @@ function [solutioncost, solution]=saTweaking(wavfilename, tagfilename)
 
         %TODO: generate next solution through your algorithm
 
-        iteration = iteration + 1
+        iteration = iteration + 1;
     end
 
     [solutioncost] = max(fitnesses);
