@@ -3,7 +3,7 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plotenable, figh)
+function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration, plotenable, figh)
 
     if(nargin < 4)
         plotenable = 0;
@@ -134,8 +134,8 @@ function [fitness, breakdown, uad, figh]=vadfitness(vtags, rtags, duration, plot
        end
     end
 
-    fitness = msc + fec + nds + over;
-    fitness = (fitness/duration) * 100; % normalized fitness
+    optimality = msc + fec + nds + over;
+    optimality = (optimality/duration) * 100; % normalized optimality
     breakdown = [msc, fec, nds, over];
 
     %IDEA: We should generate plots for the best solution on every iteration of

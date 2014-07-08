@@ -3,7 +3,7 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [batchfitness] = runVadBatch(wavfilename, tagfilename, population)
+function [batchoptimality] = runVadBatch(wavfilename, tagfilename, population)
     %reads the wav file, stores the data in y
     %fs is the sampling frequency, you need to pass the correct frequency
     %to vahdson
@@ -16,9 +16,9 @@ function [batchfitness] = runVadBatch(wavfilename, tagfilename, population)
     %vadsohn with default parameters on y, fs
     %other parameters should be passed in a matrix called pp, i think
     %I haven't tried that yet.
-    batchfitness = zeros(1, size(population,2));
+    batchoptimality = zeros(1, size(population,2));
     for i=1:size(population,2)
         tags = vadsohn(y, fs, 'a', population(i));
-        batchfitness(i) = vadfitness(tags, giventags, duration, 0);
+        batchoptimality(i) = vadOptimality(tags, giventags, duration, 0);
     end
 end

@@ -3,7 +3,7 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilename, figh, pp)
+function [figh, duration, optimality, breakdown, nad]=runvad(wavfilename, tagfilename, figh, pp)
     if(nargin < 3)
         figh(1) = figure;
         figh(2) = figure;
@@ -58,7 +58,7 @@ function [figh, duration, fitness, breakdown, nad]=runvad(wavfilename, tagfilena
     title('Actual speech waveform');
     xlabel('Time (s)');
 
-    [fitness, breakdown, nad, figh(2:3)] = vadfitness(tags, giventags, duration, 1, figh(2:3));
+    [optimality, breakdown, nad, figh(2:3)] = vadOptimality(tags, giventags, duration, 1, figh(2:3));
 
 
 end
