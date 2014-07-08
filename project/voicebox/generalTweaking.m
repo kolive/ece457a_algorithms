@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Author: Owen Wang
+%  Author: Yo Mama
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 function [solutioncost, solution]=saTweaking(wavfilename, tagfilename)
