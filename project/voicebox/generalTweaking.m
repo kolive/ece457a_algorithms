@@ -15,7 +15,7 @@ function [solutioncost, solution]=generalTweaking(wavfilename, tagfilename)
     %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     iteration = 0;
     while(iteration < iterationmax)
-        [fitnesses] = runVadBatch(wavfilename,tagfilename, solution);
+        [optimalities] = runVadBatch(wavfilename,tagfilename, solution);
 
         %TODO: generate next solution through your algorithm
 

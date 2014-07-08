@@ -11,12 +11,20 @@ function [solutioncost, solution]=saTweaking(wavfilename, tagfilename)
     % generate your initial solution
     solution = genInitialSolution();
 
-    %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     iteration = 0;
-    while(iteration < iterationmax)
-        [fitnesses] = runVadBatch(wavfilename,tagfilename, solution);
+    % TODO: set T
+    T = 100;
 
-        %TODO: generate next solution through your algorithm
+    while(iteration < iterationmax && T > 0)
+        [optimalities] = runVadBatch(wavfilename,tagfilename, solution);
+        %TODO: xn+1 = xn + randn
+        %TODO: delta_f = fn+1(xn+1) - fn(xn)
+        %TODO: accept new solution if it's better
+        %TODO: if not better
+          %TODO: generate random r
+          %TODO: accept if p=exp(-delta_f/T) > r
+
+        %TODO: update best x and f
 
         iteration = iteration + 1;
     end
