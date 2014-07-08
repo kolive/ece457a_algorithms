@@ -9,14 +9,14 @@ function [solutioncost, solution]=saTweaking(wavfilename, tagfilename)
     duration = size(y,1)/fs;
 
     %TODO: generate your initial solution
-    %solution = ??? (see generateRandomIndividual.m for example)
+    %solution = ??? (generateRandomIndividual for example)
 
-    %TODO: add in converging end case. otherwise end when reach iterationmax
+    %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     iteration = 0;
     while(iteration < iterationmax)
         [fitnesses] = runVadBatch(wavfilename,tagfilename, solution);
 
-        %TODO: generate next solution
+        %TODO: generate next solution through your algorithm
 
         iteration = iteration + 1
     end
