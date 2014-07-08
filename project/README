@@ -2,7 +2,7 @@ Getting started for your part of the project:
 
 1. Set your path in MATLAB to the voicebox folder
 
-2. See geneticTweaking.m for how Kyle did his part
+2. See generalTweaking.m for barebones of what you have to fill in
 
 3. See the doc on Google Drive if you need further understanding of things
 
