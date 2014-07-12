@@ -5,6 +5,8 @@
 *.ear
 *.swp
 *.asv
+*.gif
+*.png
 
 hs_err_pid*
 

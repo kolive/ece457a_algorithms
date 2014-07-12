@@ -3,7 +3,7 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration, plotenable, figh)
+function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration, plotenable, figh, iteration)
 
     if(nargin < 4)
         plotenable = 0;
@@ -154,7 +154,11 @@ function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration
         ylabel('Tag Value');
         s(2) = subplot(3,1,2);
         plot(s(2), vtimeplot, vtags');
-        title('Vadsohn Tags');
+        if(iteration >= 1)
+            title(strcat('Vadsohn Tags', ' - Iteration  ', int2str(iteration)));
+        else
+            title('Vadsohn Tags');
+        end
         xlabel('Time (s)');
         ylabel('Tag Value');
         s(3) = subplot(3,1,3);
