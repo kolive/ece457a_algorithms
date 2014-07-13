@@ -76,8 +76,8 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
        topscore
     
        %an ant starts looking for foooooooooood
-       % lets hardcode 10 ants
-       ants(1, :) = ones(1, 10)
+       % lets hardcode 20 ants
+       ants(1, :) = ones(1, 20)
        
        %traverse the graph, one level per parameter
        for levelId=1:7
@@ -148,6 +148,10 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
            end
        end
        iterationcount = iterationcount + 1;
+       %reset pheromones
+       for i=1:size(nodes,1)
+           nodes(i,3) = 1;
+       end
     end
     
     topscore
