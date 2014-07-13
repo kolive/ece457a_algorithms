@@ -66,9 +66,9 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     
     iterationcount = 1;
     a = 1.0;
-    b = 0.8;
+    b = 0.5;
     topscore = 1000;
-    while(iterationcount < 25)
+    while(iterationcount < 500)
        ant = iterationcount
        topscore
     
@@ -84,7 +84,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
            p(1,:) = zeros(1,qgranularity);
            for i=nchildren(curId, :)
                if(i ~= 0)
-                   p(1,x) = (nodes(i, 3)^a) * (nodes(i,1)^b);
+                   p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^b);
                else
                    p(1,x) = 0;
                end
@@ -125,6 +125,12 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
            nodes(curId, 3) = nodes(curId, 3) + 0.1;
          
        end
+       
+       %evaporate pheromones
+       for i=1:size(nodes,1)
+           nodes(i,3) = nodes(i,3) * 0.9;
+       end
+       
        if(topscore > nodes(curId, 2))
            topscore = nodes(curId, 2);
            top = nodevals(curId);
@@ -172,8 +178,8 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
     end
     
     for i = nchildren(parentId, :)
-        %normalize scores between 1 and 2 for edge costs
-        nodes(i, 1) = 1 + (nodes(i, 1)/maxopt); 
+        %normalize scores between 1 and 10 for edge costs
+        nodes(i, 1) = 1 + (nodes(i, 1)/maxopt)*9; 
     end
 end
 
