@@ -68,78 +68,84 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.5; % How much you look at the score
+    b = 0.8; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
-    while(iterationcount < 500)
-       ant = iterationcount
+    while(iterationcount < 10)
+       iteration = iterationcount
        topscore
     
-       %an ant starts looking for foooooooooood 
-       curId = 1;
+       %an ant starts looking for foooooooooood
+       % lets hardcode 10 ants
+       ants(1, :) = ones(1, 10)
        
        %traverse the graph, one level per parameter
        for levelId=1:7
-           %select the next step based on ACO calculations
+           a = 0;
+           levelId
+           for curId=ants
+               a = a + 1;
+               %select the next step based on ACO calculations
            
-           %calculate the transition probability of each child
-           x = 1;
-           % p is the probability array
-           p(1,:) = zeros(1,qgranularity);
-           for i=nchildren(curId, :)
-               if(i ~= 0)
-                   % equation take from slides
-                   p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^b);
-               else
-                   p(1,x) = 0;
+               %calculate the transition probability of each child
+               x = 1;
+               % p is the probability array
+               p(1,:) = zeros(1,qgranularity);
+               for i=nchildren(curId, :)
+                   if(i ~= 0)
+                       % equation take from slides
+                       p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^b);
+                   else
+                       p(1,x) = 0;
+                   end
+                   x = x + 1;
                end
-               x = x + 1;
-           end
-           x = 1;
-           psum = sum(p);
-           for i=nchildren(curId, :)
-               if(i ~= 0)
-                   p(1,x) = (p(1,x)/psum(1));
+               x = 1;
+               psum = sum(p);
+               for i=nchildren(curId, :)
+                   if(i ~= 0)
+                       p(1,x) = (p(1,x)/psum(1));
+                   end
+                   x = x + 1;
                end
-               x = x + 1;
-           end
-                      
-           % Roulette wheel selection of next node to visit
-           for i=2:size(p,2)
-               if(i ~= 0)
-                   p(1,i) = (p(1,i-1) + p(1,i));
+
+               % Roulette wheel selection of next node to visit
+               for i=2:size(p,2)
+                   if(i ~= 0)
+                       p(1,i) = (p(1,i-1) + p(1,i));
+                   end
                end
-           end
-           choose = rand;
-           next = nchildren(curId, 1);
-           for i=2:size(p,2)
-               if(choose < p(1,i) && choose >= p(1,i-1))
-                   next = nchildren(curId, i);
+               choose = rand;
+               next = nchildren(curId, 1);
+               for i=2:size(p,2)
+                   if(choose < p(1,i) && choose >= p(1,i-1))
+                       next = nchildren(curId, i);
+                   end
                end
+
+               %if the next step hasn't yet been visited, generate it's
+               %children
+               if(visited(next) == -1)
+                 %generates the children identifiers
+                 [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
+                 %generates child nodes
+                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+                 visited(next) = 1;
+               end
+               ants(1, a) = next;
+               nodes(curId, 3) = nodes(curId, 3) + 0.1;
+
            end
-        
-           %if the next step hasn't yet been visited, generate it's
-           %children
-           if(visited(next) == -1)
-              %generates the children identifiers
-             [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
-             %generates child nodes
-             [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
-             visited(next) = 1;
+           ants
+           %evaporate pheromones
+           for i=1:size(nodes,1)
+               nodes(i,3) = nodes(i,3) * evaporateFactor;
            end
-           curId = next;
-           nodes(curId, 3) = nodes(curId, 3) + 0.1;
-         
-       end
-       
-       %evaporate pheromones
-       for i=1:size(nodes,1)
-           nodes(i,3) = nodes(i,3) * evaporateFactor;
-       end
-       
-       if(topscore > nodes(curId, 2))
-           topscore = nodes(curId, 2);
-           top = nodevals(curId);
+
+           if(topscore > nodes(curId, 2))
+               topscore = nodes(curId, 2);
+               top = nodevals(curId);
+           end
        end
        iterationcount = iterationcount + 1;
     end
@@ -176,16 +182,9 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         x = x + 1;
         
         opt = runVadBatch(wavfile,tagfile, nodevals(i));
-        if(opt > maxopt)
-            maxopt = opt;
-        end
-        nodes(i, :) = [opt, opt, 1];
+        cost = opt - nodes(parentId, 1);
+        nodes(i, :) = [cost + 101, opt, 1]; %normalize the cost to between 1 and 201
         
-    end
-    
-    for i = nchildren(parentId, :)
-        %normalize scores between 1 and 10 for edge costs
-        nodes(i, 1) = 1 + (nodes(i, 1)/maxopt)*9; 
     end
 end
 
