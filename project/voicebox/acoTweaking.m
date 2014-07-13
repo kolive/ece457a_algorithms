@@ -1,7 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Author: Kyle Olive
 %  Date: Sometime after the fall of Rome
-%  Comments: If you don't know what this does... ask Kyle
+%  Comments: If you don't know what this does... ask Kyle. Maybe we should
+%  make per-parameter granularity?
+%  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranularity, figh, animate)
@@ -65,8 +67,9 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     visited(1) = 1; %mark the root node's children as generated
     
     iterationcount = 1;
-    a = 1.0;
-    b = 0.5;
+    a = 1.0; % How much you look at the pheremones
+    b = 0.5; % How much you look at the score
+    evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
     while(iterationcount < 500)
        ant = iterationcount
@@ -75,15 +78,17 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
        %an ant starts looking for foooooooooood 
        curId = 1;
        
-       %traverse the graph
+       %traverse the graph, one level per parameter
        for levelId=1:7
            %select the next step based on ACO calculations
            
            %calculate the transition probability of each child
            x = 1;
+           % p is the probability array
            p(1,:) = zeros(1,qgranularity);
            for i=nchildren(curId, :)
                if(i ~= 0)
+                   % equation take from slides
                    p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^b);
                else
                    p(1,x) = 0;
@@ -98,12 +103,13 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                end
                x = x + 1;
            end
+                      
+           % Roulette wheel selection of next node to visit
            for i=2:size(p,2)
                if(i ~= 0)
                    p(1,i) = (p(1,i-1) + p(1,i));
                end
            end
-           
            choose = rand;
            next = nchildren(curId, 1);
            for i=2:size(p,2)
@@ -128,7 +134,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
        
        %evaporate pheromones
        for i=1:size(nodes,1)
-           nodes(i,3) = nodes(i,3) * 0.9;
+           nodes(i,3) = nodes(i,3) * evaporateFactor;
        end
        
        if(topscore > nodes(curId, 2))
