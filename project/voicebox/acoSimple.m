@@ -4,7 +4,11 @@
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
 %  make per-parameter granularity?
 %  Example usage: 
-%
+%  WHEN TRANSLATING TO PROBLEM:
+%   Make sure you use optimality as the edge cost, not improvement
+%   Make sure you're searching over the entire ant colony for the best
+%   soln
+%   that is all for now
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=acoSimple( qgranularity)
  
