@@ -4,25 +4,16 @@
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
 %  make per-parameter granularity?
 %  Example usage: 
-%
+%  WHEN TRANSLATING TO PROBLEM:
+%   Make sure you use optimality as the edge cost, not improvement
+%   Make sure you're searching over the entire ant colony for the best
+%   soln
+%   that is all for now
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranularity, figh, animate)
-    
-    if(nargin < 3)
-        qgranularity = 10;
-    end
+function [solutioncost, solution]=acoSimple( qgranularity)
+ 
 
-    if(nargin < 4)
-        figh(1) = figure;
-        figh(2) = figure;
-        figh(3) = figure;
-    end
-
-    iterationmax = 100;
-    [y, fs] = wavread(wavfilename);
-    duration = size(y,1)/fs;
-
-    %generate the nest node, let's use the default soln
+   %generate the nest node, let's use the default soln
     nest = genInitialSolution();
     
     %we want to generate a graph where each level represents a design
@@ -52,40 +43,38 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runVadBatch(wavfilename,tagfilename, nest), 1];
+    opt = runSimpleBatch([0 0]);
+    nodes(nodeCount, :) = [0, opt, 1];
     visited(nodeCount) = -1;
-    nodevals(nodeCount) = nest;
-    nchildren(nodeCount, :) = [-1 -1 -1 -1 -1];
-
-    
+    nodevals(nodeCount, :) = [0 0];
+    nchildren(1, :) = [1];
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
-    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, 5); 
+    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
     
     %we need to generate all the first layer nodes (of)
-    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals);
     visited(1) = 1; %mark the root node's children as generated
+    
     
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.8; % How much you look at the score
+    b = 0.9; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
-    while(iterationcount < 10)
+    while(iterationcount < 3)
        iteration = iterationcount
        topscore
     
        %an ant starts looking for foooooooooood
-       % lets hardcode 10 ants
-       ants(1, :) = ones(1, 100)
-
+       % lets hardcode 20 ants
+       ants(1, :) = ones(1, 20);
        
        %traverse the graph, one level per parameter
-       for levelId=1:7
-           aid = 0;
-           levelId
+       for levelId=1:2
+           ac = 0;
            for curId=ants
-               aid = aid + 1;
+               ac = ac + 1;
                %select the next step based on ACO calculations
            
                %calculate the transition probability of each child
@@ -130,28 +119,22 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  %generates the children identifiers
                  [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
                  %generates child nodes
-                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+                 [nodes, nodevals] = generateNodes(next, levelId+1, nodes, nchildren, nodevals);
                  visited(next) = 1;
                end
-               ants(1, aid) = next;
+               ants(1, ac) = next;
                nodes(curId, 3) = nodes(curId, 3) + 0.1;
-               
-               %evaporate pheromones
-               for i=1:size(nodes,1)
-                   nodes(i,3) = nodes(i,3) * evaporateFactor;
-               end
-
            end
            ants
-          %reset pheromones
+           %evaporate pheromones
            for i=1:size(nodes,1)
-               nodes(i,3) = 1;
+               nodes(i,3) = nodes(i,3) * evaporateFactor;
            end
-
+           
            for z=ants
                if(topscore > nodes(z, 2))
                    topscore = nodes(z, 2);
-                   top = nodevals(z);
+                   top = nodevals(z, :);
                end
            end
        end
@@ -163,39 +146,30 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     end
     
     topscore
-    runvad(wavfilename,tagfilename, figh, top);
+    top
     
 end
 
-function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, wavfile, tagfile, duration)
-
+function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals)
     x = 1;
     s = size(nchildren(parentId, :), 2);
     maxopt = -1;
     for i = nchildren(parentId, :)
-        nodevals(i) = nodevals(parentId);
+        nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
         if(levelId == 1)
-            %of level
-            nodevals(i).of = x;
+            nodevals(i,1) = -3 + (6/s)*x;
         elseif(levelId == 2)
-            nodevals(i).ts = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 3)
-            nodevals(i).tn = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 4)
-            nodevals(i).ti = 10e-3 + ((10e-2 - 10e-3)/s)*x;
-        elseif(levelId == 5)
-            nodevals(i).gx = 10 + ((1000 - 10)/s)*x;
-        elseif(levelId == 6)
-            nodevals(i).xn = (1.995262/s)*x;
+            nodevals(i,2) = -3 + (6/s)*x;
         end
-            
         x = x + 1;
         
-        opt = runVadBatch(wavfile,tagfile, nodevals(i));
-        cost = opt - nodes(parentId, 2);
-        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
+        opt = runSimpleBatch(nodevals(i, :));
+        %cost = opt - nodes(parentId, 2);
+        cost = opt;
+        opt
+        nodes(i, :) = [cost, opt, 1]; %normalize the cost to between 1 and 33
         
     end
 end

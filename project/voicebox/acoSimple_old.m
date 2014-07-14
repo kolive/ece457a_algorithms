@@ -6,23 +6,10 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranularity, figh, animate)
-    
-    if(nargin < 3)
-        qgranularity = 10;
-    end
+function [solutioncost, solution]=acoTweaking( qgranularity)
+ 
 
-    if(nargin < 4)
-        figh(1) = figure;
-        figh(2) = figure;
-        figh(3) = figure;
-    end
-
-    iterationmax = 100;
-    [y, fs] = wavread(wavfilename);
-    duration = size(y,1)/fs;
-
-    %generate the nest node, let's use the default soln
+   %generate the nest node, let's use the default soln
     nest = genInitialSolution();
     
     %we want to generate a graph where each level represents a design
@@ -36,10 +23,11 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     %what should the matrix look like?
     % initially all -1
     % when a node is visited, generate the children of that node and update
-    % the indexes in graph
+    % the following indexes in graph:
     % nodes(i,:) = [edgecost, solutioncost, plevel]
     % nodevals(i) = solution
-    % children(i, :) = [quantization level cols with indexes to children]
+    % children(i, :) = [quantization level cols with indexes to children] 
+    % Sean: so children(2, :) should be nothing right?
     % visited(i, :) = [-1 if child nodes have been generated, 0 otherwise]
     
     %the first level is populated manually, contains of values
@@ -52,49 +40,49 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runVadBatch(wavfilename,tagfilename, nest), 1];
+    nodes(nodeCount, :) = [0, runSimpleBatch([-3; -3]), 1];
     visited(nodeCount) = -1;
-    nodevals(nodeCount) = nest;
-    nchildren(nodeCount, :) = [-1 -1 -1 -1 -1];
-
-    
+    nodevals(nodeCount, :) = [-3; -3];
+    nchildren(1, :) = [1];
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
-    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, 5); 
+    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
     
-    %we need to generate all the first layer nodes (of)
-    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+    %we need to generate all the first layer nodes (x_1)
+    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals);
     visited(1) = 1; %mark the root node's children as generated
+    
     
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.8; % How much you look at the score
+    b = 0.9; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
-    while(iterationcount < 10)
+    while(iterationcount < 3)
        iteration = iterationcount
        topscore
     
        %an ant starts looking for foooooooooood
-       % lets hardcode 10 ants
-       ants(1, :) = ones(1, 100)
-
+       % lets hardcode a certain amount of ants
+       % this holds the current position (node_id) of each ant
+       ants(1, :) = ones(1, 2);
        
        %traverse the graph, one level per parameter
-       for levelId=1:7
-           aid = 0;
+       for levelId=1:2
+           ac = 0;
            levelId
            for curId=ants
-               aid = aid + 1;
+               ac = ac + 1;
                %select the next step based on ACO calculations
            
                %calculate the transition probability of each child
                x = 1;
-               % p is the probability array
+               % p is the probability array, that is the probability of an
+               % ant taking this path
                p(1,:) = zeros(1,qgranularity);
                for i=nchildren(curId, :)
                    if(i ~= 0)
-                       % equation take from slides
+                       % equation taken from slides
                        p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^b);
                    else
                        p(1,x) = 0;
@@ -130,29 +118,24 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  %generates the children identifiers
                  [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
                  %generates child nodes
-                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+                 [nodes, nodevals] = generateNodes(next, levelId+1, nodes, nchildren, nodevals);
                  visited(next) = 1;
                end
-               ants(1, aid) = next;
+               ants(1, ac) = next;
                nodes(curId, 3) = nodes(curId, 3) + 0.1;
-               
-               %evaporate pheromones
-               for i=1:size(nodes,1)
-                   nodes(i,3) = nodes(i,3) * evaporateFactor;
-               end
-
+    [nodes nodevals]
+    nchildren
+    visited
            end
-           ants
-          %reset pheromones
+           ants;
+           %evaporate pheromones
            for i=1:size(nodes,1)
-               nodes(i,3) = 1;
+               nodes(i,3) = nodes(i,3) * evaporateFactor;
            end
 
-           for z=ants
-               if(topscore > nodes(z, 2))
-                   topscore = nodes(z, 2);
-                   top = nodevals(z);
-               end
+           if(topscore > nodes(curId, 2))
+               topscore = nodes(curId, 2);
+               top = nodevals(curId, :);
            end
        end
        iterationcount = iterationcount + 1;
@@ -163,39 +146,29 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     end
     
     topscore
-    runvad(wavfilename,tagfilename, figh, top);
+    top
     
 end
 
-function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, wavfile, tagfile, duration)
-
+function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals)
     x = 1;
     s = size(nchildren(parentId, :), 2);
     maxopt = -1;
     for i = nchildren(parentId, :)
-        nodevals(i) = nodevals(parentId);
+        nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
         if(levelId == 1)
-            %of level
-            nodevals(i).of = x;
+            nodevals(i,1) = -3 + (6/s)*x;
         elseif(levelId == 2)
-            nodevals(i).ts = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 3)
-            nodevals(i).tn = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 4)
-            nodevals(i).ti = 10e-3 + ((10e-2 - 10e-3)/s)*x;
-        elseif(levelId == 5)
-            nodevals(i).gx = 10 + ((1000 - 10)/s)*x;
-        elseif(levelId == 6)
-            nodevals(i).xn = (1.995262/s)*x;
+            nodevals(i,2) = -3 + (6/s)*x;
         end
-            
         x = x + 1;
         
-        opt = runVadBatch(wavfile,tagfile, nodevals(i));
-        cost = opt - nodes(parentId, 2);
-        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
+        opt = runSimpleBatch(nodevals(i));
+        %cost = opt - nodes(parentId, 2);
+        cost = opt;
+        nodes(i, :) = [cost, opt, 1]; %normalize the cost to between 1 and 33
         
     end
 end
