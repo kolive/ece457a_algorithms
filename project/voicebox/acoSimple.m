@@ -61,7 +61,10 @@ function [solutioncost, solution]=acoSimple( qgranularity)
     a = 1.0; % How much you look at the pheremones
     b = 0.9; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
+    pdeposit = 0.5; %how much pheremones each ant deposits
     topscore = 1000;
+    % TODO: I'm not sure the differences in score is significant enough if
+    % we just use the optimality
     while(iterationcount < 3)
        iteration = iterationcount
        topscore
@@ -123,7 +126,7 @@ function [solutioncost, solution]=acoSimple( qgranularity)
                  visited(next) = 1;
                end
                ants(1, ac) = next;
-               nodes(curId, 3) = nodes(curId, 3) + 0.1;
+               nodes(curId, 3) = nodes(curId, 3) + pdeposit; %todo play with pheromone deposit levels
            end
            ants
            %evaporate pheromones
@@ -140,9 +143,10 @@ function [solutioncost, solution]=acoSimple( qgranularity)
        end
        iterationcount = iterationcount + 1;
        %reset pheromones
-       for i=1:size(nodes,1)
-           nodes(i,3) = 1;
-       end
+       %TODO: I don't think we're supposed to do this
+       %for i=1:size(nodes,1)
+       %    nodes(i,3) = 1;
+       %end
     end
     
     topscore

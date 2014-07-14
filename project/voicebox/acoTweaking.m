@@ -70,6 +70,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     a = 1.0; % How much you look at the pheremones
     b = 0.8; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
+    pdeposit = 0.2; %how much pheremones to deposit
     topscore = 1000;
     while(iterationcount < 10)
        iteration = iterationcount
@@ -134,7 +135,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  visited(next) = 1;
                end
                ants(1, aid) = next;
-               nodes(curId, 3) = nodes(curId, 3) + 0.1;
+               nodes(curId, 3) = nodes(curId, 3) + pdeposit; %update pheremones
                
                %evaporate pheromones
                for i=1:size(nodes,1)
@@ -157,9 +158,10 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
        end
        iterationcount = iterationcount + 1;
        %reset pheromones
-       for i=1:size(nodes,1)
-           nodes(i,3) = 1;
-       end
+       % TODO, i dont think we want to do this
+       %for i=1:size(nodes,1)
+       %    nodes(i,3) = 1;
+       %end
     end
     
     topscore
