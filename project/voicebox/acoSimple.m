@@ -6,7 +6,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking( qgranularity)
+function [solutioncost, solution]=acoSimple( qgranularity)
  
 
    %generate the nest node, let's use the default soln
@@ -39,9 +39,10 @@ function [solutioncost, solution]=acoTweaking( qgranularity)
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runSimpleBatch([-3; -3]), 1];
+    opt = runSimpleBatch([0 0]);
+    nodes(nodeCount, :) = [0, opt, 1];
     visited(nodeCount) = -1;
-    nodevals(nodeCount, :) = [-3; -3];
+    nodevals(nodeCount, :) = [0 0];
     nchildren(1, :) = [1];
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
@@ -63,12 +64,11 @@ function [solutioncost, solution]=acoTweaking( qgranularity)
     
        %an ant starts looking for foooooooooood
        % lets hardcode 20 ants
-       ants(1, :) = ones(1, 2);
+       ants(1, :) = ones(1, 20);
        
        %traverse the graph, one level per parameter
        for levelId=1:2
            ac = 0;
-           levelId
            for curId=ants
                ac = ac + 1;
                %select the next step based on ACO calculations
@@ -120,19 +120,18 @@ function [solutioncost, solution]=acoTweaking( qgranularity)
                end
                ants(1, ac) = next;
                nodes(curId, 3) = nodes(curId, 3) + 0.1;
-    [nodes nodevals]
-    nchildren
-    visited
            end
-           ants;
+           ants
            %evaporate pheromones
            for i=1:size(nodes,1)
                nodes(i,3) = nodes(i,3) * evaporateFactor;
            end
-
-           if(topscore > nodes(curId, 2))
-               topscore = nodes(curId, 2);
-               top = nodevals(curId, :);
+           
+           for z=ants
+               if(topscore > nodes(z, 2))
+                   topscore = nodes(z, 2);
+                   top = nodevals(z, :);
+               end
            end
        end
        iterationcount = iterationcount + 1;
@@ -162,9 +161,10 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         end
         x = x + 1;
         
-        opt = runSimpleBatch(nodevals(i));
+        opt = runSimpleBatch(nodevals(i, :));
         %cost = opt - nodes(parentId, 2);
         cost = opt;
+        opt
         nodes(i, :) = [cost, opt, 1]; %normalize the cost to between 1 and 33
         
     end
