@@ -77,14 +77,14 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     
        %an ant starts looking for foooooooooood
        % lets hardcode 10 ants
-       ants(1, :) = ones(1, 10)
+       ants(1, :) = ones(1, 100)
        
        %traverse the graph, one level per parameter
        for levelId=1:7
-           a = 0;
+           aid = 0;
            levelId
            for curId=ants
-               a = a + 1;
+               aid = aid + 1;
                %select the next step based on ACO calculations
            
                %calculate the transition probability of each child
@@ -132,19 +132,26 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
                  visited(next) = 1;
                end
-               ants(1, a) = next;
+               ants(1, aid) = next;
                nodes(curId, 3) = nodes(curId, 3) + 0.1;
+               
+               %evaporate pheromones
+               for i=1:size(nodes,1)
+                   nodes(i,3) = nodes(i,3) * evaporateFactor;
+               end
 
            end
            ants
-           %evaporate pheromones
+          %reset pheromones
            for i=1:size(nodes,1)
-               nodes(i,3) = nodes(i,3) * evaporateFactor;
+               nodes(i,3) = 1;
            end
 
-           if(topscore > nodes(curId, 2))
-               topscore = nodes(curId, 2);
-               top = nodevals(curId);
+           for z=ants
+               if(topscore > nodes(z, 2))
+                   topscore = nodes(z, 2);
+                   top = nodevals(z);
+               end
            end
        end
        iterationcount = iterationcount + 1;
@@ -182,8 +189,8 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         x = x + 1;
         
         opt = runVadBatch(wavfile,tagfile, nodevals(i));
-        cost = opt - nodes(parentId, 1);
-        nodes(i, :) = [cost + 101, opt, 1]; %normalize the cost to between 1 and 201
+        cost = opt - nodes(parentId, 2);
+        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
     end
 end
