@@ -3,7 +3,7 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [figh, duration, optimality, breakdown, nad]=runvadDirect(y, fs, duration, tagfilename, figh, pp, iteration)
+function [figh, duration, optimality, breakdown, nad]=runvadDirect(y, fs, duration, giventags, figh, pp, iteration)
     if(nargin < 7)
         iteration = -1
     end
@@ -35,8 +35,6 @@ function [figh, duration, optimality, breakdown, nad]=runvadDirect(y, fs, durati
     x1 = linspace(0, duration, size(tags,1));
     x1 = x1';
 
-    %read in the given tags to do a comparison
-    giventags = dlmread(tagfilename);
     giventags = [giventags; 1.1];
     x2 = linspace(0, duration, size(giventags,1));
     x2 = x2';

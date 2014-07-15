@@ -1,7 +1,4 @@
-function [batchoptimality] = runVadBatchDirect(y, fs, duration, tagfilename, population)
-    
-    %read in the given tags to do a comparison
-    giventags = dlmread(tagfilename);
+function [batchoptimality] = runVadBatchDirect(y, fs, duration, giventags, population)
     
     %vadsohn with default parameters on y, fs
     %other parameters should be passed in a matrix called pp, i think

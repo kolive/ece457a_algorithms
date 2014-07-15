@@ -30,8 +30,11 @@ function [figh, duration, optimality, breakdown, nad]=runvad(wavfilename, tagfil
     %to vahdson
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
+    
+    %read in the given tags to do a comparison
+    giventags = dlmread(tagfilename);
 
-    [figh, duration, optimality, breakdown, nad] = runvadDirect(y, fs, duration, tagfilename, figh, pp, iteration);
+    [figh, duration, optimality, breakdown, nad] = runvadDirect(y, fs, duration, giventags, figh, pp, iteration);
 
 end
 

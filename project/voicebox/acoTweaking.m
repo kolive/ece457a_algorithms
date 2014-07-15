@@ -21,6 +21,9 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     iterationmax = 100;
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
+    
+    %read in the given tags to do a comparison
+    giventags = dlmread(tagfilename);
 
     %generate the nest node, let's use the default soln
     nest = genInitialSolution();
@@ -52,7 +55,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,tagfilename, nest), 1];
+    nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,giventags, nest), 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount) = nest;
     nchildren(nodeCount, :) = [-1 -1 -1 -1 -1];
@@ -164,7 +167,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     end
     
     topscore
-    runvadDirect(y, fs, duration,tagfilename, figh, top);
+    runvadDirect(y, fs, duration,giventags, figh, top);
     
 end
 
@@ -194,7 +197,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
             
         x = x + 1;
         
-        opt = runVadBatchDirect(y, fs, duration,tagfile, nodevals(i));
+        opt = runVadBatchDirect(y, fs, duration,giventags, nodevals(i));
         cost = opt - nodes(parentId, 2);
         nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
