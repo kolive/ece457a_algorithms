@@ -52,7 +52,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runVadBatch(wavfilename,tagfilename, nest), 1];
+    nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,tagfilename, nest), 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount) = nest;
     nchildren(nodeCount, :) = [-1 -1 -1 -1 -1];
@@ -72,7 +72,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     pdeposit = 0.2; %how much pheremones to deposit
     topscore = 1000;
-    while(iterationcount < 10)
+    while(iterationcount < 20)
        iteration = iterationcount
        topscore
     
@@ -165,7 +165,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     end
     
     topscore
-    runvad(wavfilename,tagfilename, figh, top);
+    runvadDirect(y, fs, duration,tagfilename, figh, top);
     
 end
 
@@ -195,7 +195,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
             
         x = x + 1;
         
-        opt = runVadBatch(wavfile,tagfile, nodevals(i));
+        opt = runVadBatchDirect(y, fs, duration,tagfile, nodevals(i));
         cost = opt - nodes(parentId, 2);
         nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         

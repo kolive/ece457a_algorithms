@@ -33,7 +33,7 @@ function [solutioncost, solution]=geneticTweaking(wavfilename, tagfilename, figh
     pbestfitness = 0;
     convergecount = 10;
     while(iteration < iterationmax && convergecount > 0)
-        [fitnesses] = runVadBatch(wavfilename,tagfilename, population);
+        [fitnesses] = runVadBatchDirect(y, fs, duration,tagfilename, population);
         %transform fitnesses into maximization by taking inverse
         %may want to use the equation on lecture 11 slide 22 instead of this
         fitnesses = (1./(1+fitnesses)) * 1000;
@@ -69,11 +69,11 @@ function [solutioncost, solution]=geneticTweaking(wavfilename, tagfilename, figh
         iteration = iteration + 1
         
         if(animate == 1)
-            runvad(wavfilename, tagfilename, figh, solution,iteration);
+            runvadDirect(y, fs, duration, tagfilename, figh, solution,iteration);
         end
     end
     
-    [figh, duration, solutioncost, breakdown, nad] = runvad(wavfilename, tagfilename, figh, solution, iteration);
+    [figh, duration, solutioncost, breakdown, nad] =  runvadDirect(y, fs, duration, tagfilename, figh, solution, iteration);
 end
 
 %stochastic sampling

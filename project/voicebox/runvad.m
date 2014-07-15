@@ -31,42 +31,9 @@ function [figh, duration, optimality, breakdown, nad]=runvad(wavfilename, tagfil
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
 
-    %vadsohn with default parameters on y, fs
-    %other parameters should be passed in a matrix called pp, i think
-    %I haven't tried that yet.
-    tags = vadsohn(y, fs, 'a', pp);
-    tags = [tags; 1.1];
-    x1 = linspace(0, duration, size(tags,1));
-    x1 = x1';
-
-    %read in the given tags to do a comparison
-    giventags = dlmread(tagfilename);
-    giventags = [giventags; 1.1];
-    x2 = linspace(0, duration, size(giventags,1));
-    x2 = x2';
-
-    %plot the two waveforms for comparison
-    figure(figh(1));
-    s(1) = subplot(3,1,3);
-    plot(s(1), x1, tags);
-    xlabel('Time (s)');
-    ylabel('Tag Value');
-    s(2) = subplot(3,1,2);
-    plot(s(2), x2, giventags);
-    title('Results of Vadsohn Analysis (bottom) vs. Given Tags (top)');
-    xlabel('Time (s)');
-    ylabel('Tag Value');
-    s(3) = subplot(3,1,1);
-    t=0:1/fs:(length(y)-1)/fs; %get the duration for plotting
-    plot(s(3), t, y);
-    title('Actual speech waveform');
-    xlabel('Time (s)');
-
-    if(iteration >= 1)
-        [optimality, breakdown, nad, figh(2:3)] = vadOptimality(tags, giventags, duration, 1, figh(2:3), iteration);
-        saveas(figh(2), strcat('Generation-', int2str(iteration), '.png'),'png');
-    else
-        [optimality, breakdown, nad, figh(2:3)] = vadOptimality(tags, giventags, duration, 1, figh(2:3), 1);
-    end
+    [figh, duration, optimality, breakdown, nad] = runvadDirect(y, fs, duration, tagfilename, figh, pp, iteration);
 
 end
+
+
+
