@@ -66,11 +66,11 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, 5); 
     
     %we need to generate all the first layer nodes (of)
-    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
     visited(1) = 1; %mark the root node's children as generated
     
     iterationcount = 1;
-    a = 3.0; % How much you look at the pheremones
+    a = 5.0; % How much you look at the pheremones
     b = 0.6; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
@@ -81,7 +81,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     
        %an ant starts looking for foooooooooood
        % lets hardcode 10 ants
-       ants(1, :) = ones(1, 100)
+       ants(1, :) = ones(1, 200)
 
        
        %traverse the graph, one level per parameter
@@ -134,7 +134,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  %generates the children identifiers
                  [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
                  %generates child nodes
-                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, wavfilename, tagfilename, duration);
+                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                  visited(next) = 1;
                end
                ants(1, aid) = next;
@@ -171,7 +171,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     
 end
 
-function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, wavfile, tagfile, duration)
+function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)
 
     x = 1;
     s = size(nchildren(parentId, :), 2);
@@ -197,7 +197,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
             
         x = x + 1;
         
-        opt = runVadBatchDirect(y, fs, duration,giventags, nodevals(i));
+        opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
         cost = opt - nodes(parentId, 2);
         nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
