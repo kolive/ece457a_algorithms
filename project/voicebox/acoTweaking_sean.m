@@ -75,6 +75,12 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     b = 0.6; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = 1000;
+    %for the pheremone update, we have to keep track of the best and
+    %worst function. Only the best ant gets it's function updated
+    scalingParameter = 2; % because that's what it was in the notes
+    bestPath = [];
+    bestPathCost = -1;
+    worstPathCost = -1;
     
     while(iterationcount < 20)
        iteration = iterationcount
@@ -83,9 +89,11 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
        %an ant starts looking for foooooooooood
        % lets hardcode 10 ants
        ants(1, :) = ones(1, 200)
-
        
-       %traverse the graph, one level per parameter
+       
+       %traverse the graph, one level per parameter %TODO: If this is the
+       %first iteration, set b = 0 so that the selection is random, so that
+       %we don't stagnate
        for levelId=1:7
            aid = 0;
            levelId
@@ -139,6 +147,8 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
                  visited(next) = 1;
                end
                ants(1, aid) = next;
+               % pheremone update %TODO: Change to non-constant update and
+               % only for best ant?
                nodes(curId, 3) = nodes(curId, 3) + 0.3;
                
                %evaporate pheromones
@@ -149,9 +159,9 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
            end
            ants
           %reset pheromones
-           for i=1:size(nodes,1)
-               nodes(i,3) = 1;
-           end
+          %for i=1:size(nodes,1)
+          %     nodes(i,3) = 1;
+          %end
 
            for z=ants
                if(topscore > nodes(z, 2))
