@@ -22,6 +22,7 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgr
     iterationmax = 50;
     numberOfAnts = 10;
     numberOfLevels = 7;
+    firstLevelSize = 5;
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
     
@@ -61,12 +62,12 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgr
     nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,giventags, nest), 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount) = nest;
-    nchildren(nodeCount, :) = [-1 -1 -1 -1 -1]; % make null children (to specify amount), may not be necessary?
+    nchildren(nodeCount, :) = ones(1, firstLevelSize) * -1; % make null children (to specify amount), may not be necessary?
 
     
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
-    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, 5); 
+    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, firstLevelSize); 
     
     %we need to generate all the first layer nodes (of)
     [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);

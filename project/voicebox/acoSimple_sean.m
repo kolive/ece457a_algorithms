@@ -14,8 +14,8 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
  
 
     %generate the nest node, let's use the default soln
-    iterationmax = 10;
-    numberOfAnts = 10;
+    iterationmax = 3;
+    numberOfAnts = 1;
     numberOfLevels = 2;
     nest = genInitialSolution();
     
@@ -50,12 +50,12 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     nodes(nodeCount, :) = [0, opt, 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount, :) = [0 0];
-    nchildren(1, :) = [1]; %WTF? Can remove?
+    nchildren = ones(1,qgranularity);
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
     [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
     
-    %we need to generate all the first layer nodes (of)
+    %we need to generate all the first layer of nodes
     [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals);
     visited(1) = 1; %mark the root node's children as generated
     
@@ -100,7 +100,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                p(1,:) = zeros(1,qgranularity);
                for i=nchildren(curId, :)
                    if(i ~= 0)
-                       % equation take from slides
+                       % equation taken from slides
                        p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
                    else
                        p(1,x) = 0;
@@ -140,7 +140,8 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                  visited(next) = 1;
                end
                ants(1, aid) = next;
-               paths(aid,levelId) = next; % save the path
+               levelId
+               paths(aid,levelId+1) = next; % save the path
            end
            ants
            
@@ -149,12 +150,13 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                nodes(i,3) = nodes(i,3) * evaporateFactor;
            end
            
-           for z=ants
-               if(topscore > nodes(z, 2))
-                   topscore = nodes(z, 2);
-                   top = nodevals(z, :);
-               elseif(worstscore < nodes(z,2))
-                   worstscore = nodes(z, 2);
+           for antIndex=1:size(ants,1)
+               if(topscore > nodes(ants(antIndex), 2))
+                   bestAnt = antIndex;
+                   topscore = nodes(ants(antIndex), 2);
+                   top = nodevals(ants(antIndex), :);
+               elseif(worstscore < nodes(ants(antIndex),2))
+                   worstscore = nodes(ants(antIndex), 2);
                end
            end
            % Update the pheremones % This iteration could totally be vectorized
@@ -163,8 +165,11 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                % If it isn't an empty path
                if(bestPath(antIndex,1) > -1)
                    for node = bestPath(antIndex,:)
+                       % Taken from the function optimization slides
                        nodes(node,3) = scalingParameter * topscore / worstscore;
                    end
+               else
+                    error('myApp:argChk', 'best ant has no path');
                end
                bestPath = ones(numberOfAnts, numberOfLevels) * -1;
            end
@@ -191,7 +196,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         opt = runSimpleBatch(nodevals(i, :));
         %cost = opt - nodes(parentId, 2);
         cost = opt;
-        opt
+        %opt
         nodes(i, :) = [cost, opt, 1]; %normalize the cost to between 1 and 33
         
     end
