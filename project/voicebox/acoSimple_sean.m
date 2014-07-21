@@ -10,7 +10,7 @@
 %   soln
 %   that is all for now
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoSimple(qgranularity)
+function [solutioncost, solution]=acoSimple_sean(qgranularity)
  
 
     %generate the nest node, let's use the default soln
@@ -50,7 +50,7 @@ function [solutioncost, solution]=acoSimple(qgranularity)
     nodes(nodeCount, :) = [0, opt, 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount, :) = [0 0];
-    nchildren(1, :) = [1]; %WTF?
+    nchildren(1, :) = [1]; %WTF? Can remove?
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
     [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
@@ -136,7 +136,7 @@ function [solutioncost, solution]=acoSimple(qgranularity)
                  %generates the children identifiers
                  [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
                  %generates child nodes
-                 [nodes, nodevals] = generateNodes(next, levelId+1, nodes, nchildren, nodevals); %WTF, levelId+1?
+                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals);
                  visited(next) = 1;
                end
                ants(1, aid) = next;
@@ -152,7 +152,7 @@ function [solutioncost, solution]=acoSimple(qgranularity)
            for z=ants
                if(topscore > nodes(z, 2))
                    topscore = nodes(z, 2);
-                   top = nodevals(z, :); %WTF?
+                   top = nodevals(z, :);
                elseif(worstscore < nodes(z,2))
                    worstscore = nodes(z, 2);
                end
@@ -185,11 +185,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
-        if(levelId == 1)
-            nodevals(i,1) = -3 + (6/s)*x;
-        elseif(levelId == 2)
-            nodevals(i,2) = -3 + (6/s)*x;
-        end
+        nodevals(i,levelId) = -3 + (6/s)*x;
         x = x + 1;
         
         opt = runSimpleBatch(nodevals(i, :));

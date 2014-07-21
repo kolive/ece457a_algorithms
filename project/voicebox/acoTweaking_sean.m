@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranularity, figh, animate)
+function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgranularity, figh, animate)
     
     if(nargin < 3)
         qgranularity = 10;
@@ -61,7 +61,7 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
     nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,giventags, nest), 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount) = nest;
-    nchildren(nodeCount, :) = [-1 -1 -1 -1 -1];
+    nchildren(nodeCount, :) = [-1 -1 -1 -1 -1]; % make null children (to specify amount), may not be necessary?
 
     
     %generates the children identifiers, 5 for the first level since of is
