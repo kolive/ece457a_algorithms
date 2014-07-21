@@ -24,12 +24,6 @@ function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration
     %offset amount, e.g., how many vad tags per real tag?
     ocount = vsize/rsize;
 
-    %some of the vtags won't be analyzed because #vtags not divisible by #rtags
-    %this will introduce some analysis error.. may want to select which vtags
-    %to skip in order to minimize this
-    %right now, just the  vtags at the end chunks will be thrown out
-    analysisrange = rsize;
-
     %amount of thrown out vtags, may introduce error because the ones we keep
     %dont line up perfectly with the rtags, though this is a small chunk of
     %time so error should be neglible
