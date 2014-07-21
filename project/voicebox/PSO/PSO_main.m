@@ -53,7 +53,24 @@ individual2.xn=1.893211313813539;
 tags2 = vadsohn(y, fs, 'a', individual2);
 vadOptimality(tags2, giventags, duration, 0)
 
-for j = 1:5
+
+individual3.of= 1;
+individual3.pr=0.7;  
+individual3.ts= 1.749950448283879; 
+individual3.tn= 0.002920524126776;
+individual3.ti= 0.023988731050853;   
+individual3.ri=0;       
+individual3.ta=0.396;    
+individual3.gx=26.861409178805921;
+individual3.xn=1.787472262730411;
+
+tags3 = vadsohn(y, fs, 'a', individual3);
+vadOptimality(tags3, giventags, duration, 0)
+
+figh = [ figure figure figure ];
+plotenable = 0;
+
+for j = 1:4
     min_fitness = 10^10;
     min_individual = 0;
     count = 0;
@@ -63,10 +80,14 @@ for j = 1:5
     for k=1:K
         %disp([' Run ' , num2str(k) ])
         w = w_max+(((w_min-w_max)*(k-1))/(K-1));
-        [fitness, min_fitness, min_individual, count] = PSO_evaluate(position,k,N,D,L,var,x_max,fitness,y, fs, duration, giventags, Num_func, min_fitness, min_individual, count);
+        iteration = k;
+        [fitness, min_fitness, min_individual, count] = ...
+            PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...
+                         fs, duration, giventags, Num_func, min_fitness, ...
+                         min_individual, count, plotenable, figh, iteration);
         if count > 20
-            disp([num2str(k - 20), ' iterations ' ])
-            %break;
+            %disp([num2str(k - 20), ' iterations ' ])
+            break;
         end
         [p_best,p_best_fit] = PSO_renewp_best(D,fitness,p_best,N,k,position,p_best_fit,Min_Max_flag);
         g_best=PSO_renewg_best(p_best,p_best_fit,N,Min_Max_flag,Gl_Lo_flag);
