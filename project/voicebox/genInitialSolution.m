@@ -1,4 +1,4 @@
-function [pp]=generateRandomIndividual()
+function [pp]=genInitialSolution()
     pp.of=2;   % overlap factor = (fft length)/(frame increment)
     pp.pr=0.7;    % Speech probability threshold
     pp.ts=0.1;  % mean talkspurt length (100 ms)
