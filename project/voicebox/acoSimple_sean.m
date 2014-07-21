@@ -90,6 +90,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
        %traverse the graph, one level per parameter
        for levelId=1:numberOfLevels
            aid = 0;
+           curlevelid = levelId
            for curId=ants
                aid = aid + 1;
                %select the next step based on ACO calculations
@@ -141,38 +142,38 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                end
                ants(1, aid) = next;
                levelId
-               paths(aid,levelId+1) = next; % save the path
+               paths(aid,levelId) = next % save the path
            end
            ants
-           
-           %evaporate pheromones
-           for i=1:size(nodes,1)
-               nodes(i,3) = nodes(i,3) * evaporateFactor;
+          
+       end
+       %evaporate pheromones
+       for i=1:size(nodes,1)
+           nodes(i,3) = nodes(i,3) * evaporateFactor;
+       end
+
+       for antIndex=1:size(ants,1)
+           if(topscore > nodes(ants(antIndex), 2))
+               bestAnt = antIndex;
+               topscore = nodes(ants(antIndex), 2);
+               top = nodevals(ants(antIndex), :);
+           elseif(worstscore < nodes(ants(antIndex),2))
+               worstscore = nodes(ants(antIndex), 2);
            end
-           
-           for antIndex=1:size(ants,1)
-               if(topscore > nodes(ants(antIndex), 2))
-                   bestAnt = antIndex;
-                   topscore = nodes(ants(antIndex), 2);
-                   top = nodevals(ants(antIndex), :);
-               elseif(worstscore < nodes(ants(antIndex),2))
-                   worstscore = nodes(ants(antIndex), 2);
+       end
+       % Update the pheremones % This iteration could totally be vectorized
+       bestPath = paths(bestAnt,:);
+       for antIndex=1:size(bestPath,1)
+           % If it isn't an empty path
+           if(bestPath(antIndex,1) > -1)
+               for node = bestPath(antIndex,:)
+                   % Taken from the function optimization slides
+                   nodes(node,3) = scalingParameter * topscore / worstscore;
                end
+           else
+                error('myApp:argChk', 'best ant has no path');
            end
-           % Update the pheremones % This iteration could totally be vectorized
-           bestPath = paths(bestAnt,:);
-           for antIndex=1:size(bestPath,1)
-               % If it isn't an empty path
-               if(bestPath(antIndex,1) > -1)
-                   for node = bestPath(antIndex,:)
-                       % Taken from the function optimization slides
-                       nodes(node,3) = scalingParameter * topscore / worstscore;
-                   end
-               else
-                    error('myApp:argChk', 'best ant has no path');
-               end
-               bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-           end
+           bestPath = ones(numberOfAnts, numberOfLevels) * -1;
        end
        iterationcount = iterationcount + 1;
     end
