@@ -12,12 +12,11 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=acoSimple_sean(qgranularity)
  
-
-    %generate the nest node, let's use the default soln
-    iterationmax = 3;
-    numberOfAnts = 1;
+    iterationmax = 5;
+    % because of the pheremone update, this algorithm won't work with
+    % anything less than 2 ants
+    numberOfAnts = 2;
     numberOfLevels = 2;
-    nest = genInitialSolution();
     
     %we want to generate a graph where each level represents a design
     %variable
@@ -32,7 +31,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     % when a node is visited, generate the children of that node and update
     % the indexes in graph
     % nodes(i,:) = [edgecost, solutioncost, pheremoneLevel]
-    % nodevals(i) = solution
+    % nodevals(i,:) = parameters_to_plug_in
     % children(i, :) = [quantization level cols with indexes to children]
     % visited(i, :) = [-1 if child nodes have been generated, 0 otherwise]
     
@@ -46,8 +45,8 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    opt = runSimpleBatch([0 0]);
-    nodes(nodeCount, :) = [0, opt, 1];
+    nest = runSimpleBatch([0 0]);
+    nodes(nodeCount, :) = [0, nest, 1];
     visited(nodeCount) = -1;
     nodevals(nodeCount, :) = [0 0];
     nchildren = ones(1,qgranularity);
@@ -64,19 +63,17 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     a = 1.0; % How much you look at the pheremones
     b = 0.9; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
-    topscore = 1000;
+    topscore = -1;
+    worstscore = -1;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
     scalingParameter = 2; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
     bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-    worstscore = 1000;
-    bestAnt = -1;
+    bestAntsIndex = ones(1, numerOfAnts) * -1;
     
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
-       topscore
-       bestAnt = -1;
        
        if(iterationcount > 1)
            specialB = b;
@@ -84,13 +81,13 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
            specialB = 0;
        end
     
-       %an ant starts looking for foooooooooood
+       %an ant starts looking for food starting from home
+       %this array will hold where the ant currently is
        ants(1, :) = ones(1, numberOfAnts);
        
        %traverse the graph, one level per parameter
        for levelId=1:numberOfLevels
            aid = 0;
-           curlevelid = levelId
            for curId=ants
                aid = aid + 1;
                %select the next step based on ACO calculations
@@ -152,45 +149,29 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
            nodes(i,3) = nodes(i,3) * evaporateFactor;
        end
 
-       for antIndex=1:size(ants,1)
-           if(topscore > nodes(ants(antIndex), 2))
-               bestAnt = antIndex;
-               topscore = nodes(ants(antIndex), 2);
-               top = nodevals(ants(antIndex), :);
-           elseif(worstscore < nodes(ants(antIndex),2))
-               worstscore = nodes(ants(antIndex), 2);
-           end
-       end
-       % Update the pheremones % This iteration could totally be vectorized
-       bestPath = paths(bestAnt,:);
-       for antIndex=1:size(bestPath,1)
-           % If it isn't an empty path
-           if(bestPath(antIndex,1) > -1)
-               for node = bestPath(antIndex,:)
-                   % Taken from the function optimization slides
-                   nodes(node,3) = scalingParameter * topscore / worstscore;
-               end
-           else
-                error('myApp:argChk', 'best ant has no path');
-           end
-           bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-       end
+       % Find the best and worst score
+       topscore = max(nodes(ants,2));
+       worstscore = min(nodes(ants,2));
+       bestAntsIndex = find(nodes(ants,2) == topscore));
+       
+       % Update the pheremones
+       nodes(paths(bestAntIndex,:),3) = nodes(paths(bestAntIndex,:),3) + scalingParameter * worstscore / topscore;
        iterationcount = iterationcount + 1;
     end
     
     topscore
-    top
     
 end
 
 function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals)
     x = 1;
     s = size(nchildren(parentId, :), 2);
-    maxopt = -1;
+    % This could probably be vectorized
     for i = nchildren(parentId, :)
         nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
+        %should generate a value between -3 and +3
         nodevals(i,levelId) = -3 + (6/s)*x;
         x = x + 1;
         
