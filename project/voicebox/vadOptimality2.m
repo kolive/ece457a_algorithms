@@ -13,7 +13,7 @@ function optimality=vadOptimality2(vtags, rtags)
     errorcount = 0;
     for j=1:rsize,
        vindex = floor(j*rfactor);
-       errorcount = errorcount + bitxor(rtags(j), vtags(vindex), 'int8');
+       errorcount = errorcount + bitxor(rtags(j), vtags(vindex));
     end
     
     optimality = (errorcount/rsize) * 100; % normalized optimality
