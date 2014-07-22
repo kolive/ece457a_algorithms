@@ -4,6 +4,16 @@
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration, plotenable, figh, iteration)
+    if(nargin < 4)
+        plotenable = 0;
+    end
+
+    if(nargin < 5 && plotenable == 1)
+        %make new figure
+        figh(1) = figure;
+        figh(2) = figure;
+    end    
+
     vsize = size(vtags,1);
     rsize = size(rtags,1);
     
