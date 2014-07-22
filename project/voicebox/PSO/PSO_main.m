@@ -67,7 +67,7 @@ individual3.xn=1.787472262730411;
 tags3 = vadsohn(y, fs, 'a', individual3);
 vadOptimality(tags3, giventags, duration, 0)
 
-figh = [ figure figure figure ];
+figh = figure;
 plotenable = 0;
 
 for j = 1:4
@@ -85,8 +85,8 @@ for j = 1:4
             PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...
                          fs, duration, giventags, Num_func, min_fitness, ...
                          min_individual, count, plotenable, figh, iteration);
-        if count > 20
-            %disp([num2str(k - 20), ' iterations ' ])
+        if count == 20
+            disp('done at ', [num2str(k - 20), ' iterations ' ])
             break;
         end
         [p_best,p_best_fit] = PSO_renewp_best(D,fitness,p_best,N,k,position,p_best_fit,Min_Max_flag);

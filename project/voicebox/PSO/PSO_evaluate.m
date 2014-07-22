@@ -1,7 +1,6 @@
 function [fitness,min_fitness,min_individual, count]=PSO_evaluate(position,k,N,D,L,var,x_max,fitness,y, fs, duration, giventags,Num_func,min_fitness, min_individual, count, plotenable, figh, iteration)
 count = count + 1;
 iteration = N * iteration;
-giventags = [giventags; 1.1];
 for i=1:N
     for j=1:var
         temp=position(i,(j-1)*L+1:j*L);
@@ -34,32 +33,34 @@ for i=1:N
     individual.ta=0.396;    
     individual.gx=10 + ((1000 - 10)*X(5));
     individual.xn=1.995262 * X(6);
-    tags = [vadsohn(y, fs, 'a', individual); 1.1];
+    tags = vadsohn(y, fs, 'a', individual);
     if (mod(iteration, 50) == 0)
 
     end
     
-    fitness(i,k) = vadOptimality(tags, giventags, duration, plotenable, figh, iteration);
+    fitness(i,k) = vadOptimality2(tags, giventags);
     if fitness(i, k) < min_fitness
+        gt = [giventags; 1.1];
+        ct = [tags; 1.1];
         min_fitness = fitness(i, k)
         min_individual = individual;
         count = 0;
         
-                x1 = linspace(0, duration, size(tags,1));
+        x1 = linspace(0, duration, size(ct,1));
         x1 = x1';
 
 
-        x2 = linspace(0, duration, size(giventags,1));
+        x2 = linspace(0, duration, size(gt,1));
         x2 = x2';
 
         %plot the two waveforms for comparison
-        figure(figh(1));
+        figure(figh);
         s(1) = subplot(3,1,3);
-        plot(s(1), x1, tags);
+        plot(s(1), x1, ct);
         xlabel('Time (s)');
         ylabel('Tag Value');
         s(2) = subplot(3,1,2);
-        plot(s(2), x2, giventags);
+        plot(s(2), x2, gt);
         title('Results of Vadsohn Analysis (bottom) vs. Given Tags (top)');
         xlabel('Time (s)');
         ylabel('Tag Value');
@@ -69,7 +70,7 @@ for i=1:N
         title('Actual speech waveform');
         xlabel('Time (s)');
 
-        saveas(figh(1), strcat('1Generation-', int2str(iteration), '.png'),'png');  
+        saveas(figh, strcat('1Generation-', int2str(iteration), '.png'),'png');  
         
     end
     iteration = iteration + 1;
