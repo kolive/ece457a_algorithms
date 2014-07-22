@@ -4,7 +4,6 @@
 %  Comments: If you don't know what this does... ask Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration, plotenable, figh, iteration)
-
     if(nargin < 4)
         plotenable = 0;
     end
@@ -13,7 +12,7 @@ function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration
         %make new figure
         figh(1) = figure;
         figh(2) = figure;
-    end
+    end    
 
     vsize = size(vtags,1);
     rsize = size(rtags,1);
@@ -23,12 +22,6 @@ function [optimality, breakdown, uad, figh]=vadOptimality(vtags, rtags, duration
 
     %offset amount, e.g., how many vad tags per real tag?
     ocount = vsize/rsize;
-
-    %some of the vtags won't be analyzed because #vtags not divisible by #rtags
-    %this will introduce some analysis error.. may want to select which vtags
-    %to skip in order to minimize this
-    %right now, just the  vtags at the end chunks will be thrown out
-    analysisrange = rsize;
 
     %amount of thrown out vtags, may introduce error because the ones we keep
     %dont line up perfectly with the rtags, though this is a small chunk of
