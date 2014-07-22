@@ -28,47 +28,54 @@ function [solutioncost, solution]=geneticTweaking(wavfilename, tagfilename, figh
     %but i'll try 50 for now
     % generate initial population
     %TODO: learn how to init struct arrays in matlab
-    for i=1:100
+    for i=1:200
         population(i) = generateRandomIndividual(duration);
     end
 
     iteration = 0;
     pbestfitness = 0;
-    convergecount = 10;
+    convergecount = 200;
     while(iteration < iterationmax && convergecount > 0)
         [fitnesses] = runVadBatchDirect(y, fs, duration,giventags, population);
         %transform fitnesses into maximization by taking inverse
         %may want to use the equation on lecture 11 slide 22 instead of this
-        fitnesses = (1./(1+fitnesses)) * 1000;
-
+        %fitnesses = (1./(1+fitnesses)) * 1000;
+        fitnesses = 1./(1+fitnesses);
+        fitsum = sum(fitnesses);
+        %fitnesses = 2 - ((fitnesses*size(fitnesses,2))/fitsum);
+        mostfit = max(fitnesses)
+        
+        
+        
         if(max(fitnesses) == pbestfitness)
             convergecount = convergecount - 1
         else
-            convergecount = 10;
+            convergecount = 200;
         end
-        [pbestfitness, si] = max(fitnesses)
-        solution = population(si);
+        
         %select mating pool by fitness proportional selection - stochastic
         %sampling
-        % lets try to use GA (steady state works too, just replace 50 with
-        % something < 50
-        [selectedpop, rindex] = stochasticSamplingSelection(population, fitnesses, 50);
+        [selectedpop, rindex] = populationSelection(population, fitnesses, 100);
 
         %generate children
         [children] = generateChildren(selectedpop);
 
-        %replace 50 random people who aren't parents with the new children
-        % TODO: use another replacement algorithms
-        % USED FOR Steady State
         indices = linspace(1, size(population,2), size(population,2));
         eligible = setdiff(indices, rindex);
-        x = 1;
         for i=1:size(rindex, 2)
+            %replace the 26 random elements that werent parents
             ri = eligible(randi(size(eligible,2)));
             eligible = setdiff(eligible, ri);
+            
+            %replace the parents
+            %this is bad because we kill the strong genes
+            %ri = rindex(i);
             population(ri) = children(i);
         end
-
+        
+        [pbestfitness, si] = max(fitnesses)
+        solution = population(si);
+        
         iteration = iteration + 1
         
         if(animate == 1)
@@ -80,44 +87,47 @@ function [solutioncost, solution]=geneticTweaking(wavfilename, tagfilename, figh
 end
 
 %stochastic sampling
-function [selectedpop, rindex]=stochasticSamplingSelection(population, fitnesses, count)
+function [selectedpop, rindex]=populationSelection(population, fitnesses, count)
     selectedpop = [];
     %generate probability of selection by total fitness
     totalfit = sum(fitnesses);
 
     pindex = linspace(1, size(population,2), size(population,2));
-    scoredpop = [pindex; fitnesses];
-
-    dselectors = totalfit / count;
-    rv = rand * dselectors;
-    rselectors = zeros(1, count);
-    for i=1:count
-        rselectors(i) = rv + (i-1) * dselectors;
+    scoredpop = [pindex; fitnesses; fitnesses/totalfit];
+    
+    for i=2:size(scoredpop,2)
+        scoredpop(3,i) = scoredpop(3,i-1) + scoredpop(3,i);
     end
 
     %select population which gets to get laid
-    %x = 1;
-    %for i=1:size(scoredpop,2)
-    %   fitnessum = sum(scoredpop(2,1:i));
-    %   if(x < 16 && fitnessum > rselectors(x))
-    %       selectedpop = [selectedpop population(scoredpop(1,i))];
-    %       rindex(x) = scoredpop(1,i);
-    %       x = x + 1;
-    %   end
+    
+    %roulette wheel selection
+    %Expected cons: because the differences in optimality aren't super
+    %huge, bad solutions get a higher chance of being selected.
+    %for y=1:count
+    %    pr = rand;
+    %    for i=1:size(scoredpop,2)
+    %        if(i == 1 && (pr < scoredpop(3,1)))
+    %            selectedpop = [selectedpop population(i)];
+    %            rindex(y) = i;
+    %        end
+    %        if(i > 1 && pr > scoredpop(3,i - 1) && pr < scoredpop(3,i))
+    %            selectedpop = [selectedpop population(i)];
+    %            rindex(y) = i;
+    %        end
+    %    end
     %end
     
-    %lets try picking the top count solutions
-    topcount = fliplr(sortrows(fitnesses')');
-    topcount = topcount(1:count);
-    x = 0;
-    i = 0;
-    while( x < count && i < size(scoredpop,2))
-        i = i + 1;
-        if( ismember(scoredpop(2, i), topcount) )
-            x = x + 1;
-            selectedpop = [selectedpop population(scoredpop(1,i))];
-            rindex(x) = i;
-        end
+    
+    %fitness ranking
+    % this might limit the gene pool, but we have a fairly high mutation
+    % rate
+    
+    [sortedlist, sindex] = sort(fitnesses, 2);
+    for y=1:count
+        i = sindex(size(fitnesses, 2) - y + 1);
+        selectedpop = [selectedpop population(i)];
+        rindex(y) = i;
     end
 end
 
@@ -140,7 +150,7 @@ end
 
 %TODO:
 function [child] = mutate(child, mrate)
-    % generate rand number, if number > mrate, mutate the child
+    % generate rand number, if number < mrate, mutate the child
     if (rand < mrate)
        % child.of = max(floor(child.of + (randi(-1,1)*rand*(5-child.of))), 1);
        child.ts = child.ts + ((rand - rand) * child.ts);
@@ -156,21 +166,21 @@ function [child1, child2] = crossover(p1, p2)
     a = 0.5;
     %child1.of= 1 + floor(a*p1.of + (1-a)*p2.of); %I think this needs to be a whole number
     %child2.of= 1 + floor((1-a)*p1.of + (a)*p2.of); %I think this needs to be a whole number
-    child1.of = p1.of;
-    child2.of = p1.of;
+    child1.of = floor((p1.of + p2.of)/2);
+    child2.of = ceil((p1.of + p2.of)/2);
     
     child1.pr=0.7;
     child2.pr=0.7;
 
-    a = 1;
+    a = 0.8;
     child1.ts= a*p1.ts + (1-a)*p2.ts;
     child2.ts= (1-a)*p1.ts + (a)*p2.ts;
 
-    a = 0.5;
+    a = 0.8;
     child1.tn= a*p1.tn + (1-a)*p2.tn;
     child2.tn= (1-a)*p1.tn + (a)*p2.tn;
 
-    a = 0.4;
+    a = 0.8;
     child1.ti= a*p1.ti + (1-a)*p2.ti;
     child2.ti= (1-a)*p1.ti + (a)*p2.ti;
 
@@ -180,11 +190,11 @@ function [child1, child2] = crossover(p1, p2)
     child1.ta=0.396;
     child2.ta=0.396;
 
-    a = 1;
+    a = 0.8;
     child1.gx= a*p1.gx + (1-a)*p2.gx;
     child2.gx= (1-a)*p1.gx + (a)*p2.gx;
 
-    a = 0.4;
+    a = 0.8;
     child1.xn= a*p1.xn + (1-a)*p2.xn;
     child2.xn= (1-a)*p1.xn + (a)*p2.xn;
 
