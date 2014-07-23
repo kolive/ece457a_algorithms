@@ -25,7 +25,7 @@ for i=1:N
 %             end
 %     end
     individual.of= floor(5 * X(1)) + 1; %I think this needs to be a whole number
-    individual.pr=0.7;  
+    individual.pr=0.7;
     individual.ts= duration/2 * X(2); 
     individual.tn= duration/2 * X(3);
     individual.ti=10e-3 + ((10e-2 - 10e-3) * X(4));   
@@ -42,7 +42,7 @@ for i=1:N
     if fitness(i, k) < min_fitness
         gt = [giventags; 1.1];
         ct = [tags; 1.1];
-        min_fitness = fitness(i, k)
+        min_fitness = fitness(i, k);
         min_individual = individual;
         count = 0;
         
@@ -70,7 +70,7 @@ for i=1:N
         title('Actual speech waveform');
         xlabel('Time (s)');
 
-        saveas(figh, strcat('1Generation-', int2str(iteration), '.png'),'png');  
+        %saveas(figh, strcat('1Generation-', int2str(iteration), '.png'),'png');  
         
     end
     iteration = iteration + 1;
