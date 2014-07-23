@@ -21,56 +21,58 @@
 
 clear,close all,clc  %#ok<DUALC>
 
+parpool('local',2)
+
 [y, fs] = wavread('audio2.wav');
 duration = size(y,1)/fs;
 
 %read in the given tags to do a comparison
 giventags = dlmread('audio2.tag');
 
-individual1.of= 5;
-individual1.pr=0.7;  
-individual1.ts= 0.101009157193833; 
-individual1.tn= 0.039162892507541;
-individual1.ti= 0.097479128621034;   
-individual1.ri=0;       
-individual1.ta=0.396;    
-individual1.gx=8.222561384385975e+02;
-individual1.xn=1.112044017661430;
-
-tags1 = vadsohn(y, fs, 'a', individual1);
-vadOptimality(tags1, giventags, duration, 0)
-
-individual2.of= 5;
-individual2.pr=0.7;  
-individual2.ts= 0.084601922826471; 
-individual2.tn= 0.037716553800475;
-individual2.ti= 0.097467301085095;   
-individual2.ri=0;       
-individual2.ta=0.396;    
-individual2.gx=2.222317263970447e+02;
-individual2.xn=1.893211313813539;
-
-tags2 = vadsohn(y, fs, 'a', individual2);
-vadOptimality(tags2, giventags, duration, 0)
-
-
-individual3.of= 1;
-individual3.pr=0.7;  
-individual3.ts= 1.749950448283879; 
-individual3.tn= 0.002920524126776;
-individual3.ti= 0.023988731050853;   
-individual3.ri=0;       
-individual3.ta=0.396;    
-individual3.gx=26.861409178805921;
-individual3.xn=1.787472262730411;
-
-tags3 = vadsohn(y, fs, 'a', individual3);
-vadOptimality(tags3, giventags, duration, 0)
+% individual1.of= 5;
+% individual1.pr=0.7;  
+% individual1.ts= 0.101009157193833; 
+% individual1.tn= 0.039162892507541;
+% individual1.ti= 0.097479128621034;   
+% individual1.ri=0;       
+% individual1.ta=0.396;    
+% individual1.gx=8.222561384385975e+02;
+% individual1.xn=1.112044017661430;
+% 
+% tags1 = vadsohn(y, fs, 'a', individual1);
+% vadOptimality(tags1, giventags, duration, 0)
+% 
+% individual2.of= 5;
+% individual2.pr=0.7;  
+% individual2.ts= 0.084601922826471; 
+% individual2.tn= 0.037716553800475;
+% individual2.ti= 0.097467301085095;   
+% individual2.ri=0;       
+% individual2.ta=0.396;    
+% individual2.gx=2.222317263970447e+02;
+% individual2.xn=1.893211313813539;
+% 
+% tags2 = vadsohn(y, fs, 'a', individual2);
+% vadOptimality(tags2, giventags, duration, 0)
+% 
+% 
+% individual3.of= 1;
+% individual3.pr=0.7;  
+% individual3.ts= 1.749950448283879; 
+% individual3.tn= 0.002920524126776;
+% individual3.ti= 0.023988731050853;   
+% individual3.ri=0;       
+% individual3.ta=0.396;    
+% individual3.gx=26.861409178805921;
+% individual3.xn=1.787472262730411;
+% 
+% tags3 = vadsohn(y, fs, 'a', individual3);
+% vadOptimality(tags3, giventags, duration, 0)
 
 figh = figure;
 plotenable = 0;
-
-for j = 1:4
+tic
+for j = 1:16
     min_fitness = 10^10;
     min_individual = 0;
     count = 0;
@@ -85,10 +87,10 @@ for j = 1:4
             PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...
                          fs, duration, giventags, Num_func, min_fitness, ...
                          min_individual, count, plotenable, figh, iteration);
-        if count == 20
-            disp('done at ', [num2str(k - 20), ' iterations ' ])
-            break;
-        end
+%         if count == 20
+%             disp(['done at ', num2str(k - 20), ' iterations ' ])
+%             break;
+%         end
         [p_best,p_best_fit] = PSO_renewp_best(D,fitness,p_best,N,k,position,p_best_fit,Min_Max_flag);
         g_best=PSO_renewg_best(p_best,p_best_fit,N,Min_Max_flag,Gl_Lo_flag);
         [position,velocity]=PSO_update_v_p(D,N,c1,c2,w,p_best,g_best,position,velocity,v_max,Gl_Lo_flag);
@@ -102,6 +104,7 @@ for j = 1:4
     min_fitness
     min_individual
 end
+toc
 PSO_display_result(best_fit,mean_fit,K,Min_Max_flag)
 
 
