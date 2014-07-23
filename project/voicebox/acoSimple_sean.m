@@ -15,7 +15,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     iterationmax = 5;
     % because of the pheremone update, this algorithm won't work with
     % anything less than 2 ants
-    numberOfAnts = 2;
+    numberOfAnts = 5;
     numberOfLevels = 2;
     
     %we want to generate a graph where each level represents a design
@@ -65,12 +65,13 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = -1;
     worstscore = -1;
+    top = ones(1,numberOfLevels) * 100;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
-    scalingParameter = 2; % because that's what it was in the notes
+    scalingParameter = 0.5; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
     bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-    bestAntsIndex = ones(1, numerOfAnts) * -1;
+    bestAntsIndex = ones(1, numberOfAnts) * -1;
     
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
@@ -96,6 +97,8 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                x = 1;
                % p is the probability array
                p(1,:) = zeros(1,qgranularity);
+               % iterating through the children of the node that the ant is
+               % at, create the probability array
                for i=nchildren(curId, :)
                    if(i ~= 0)
                        % equation taken from slides
@@ -138,27 +141,29 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                  visited(next) = 1;
                end
                ants(1, aid) = next;
-               levelId
+               %levelId
                paths(aid,levelId) = next % save the path
            end
-           ants
+           %ants
           
        end
-       %evaporate pheromones
-       for i=1:size(nodes,1)
-           nodes(i,3) = nodes(i,3) * evaporateFactor;
-       end
-
-       % Find the best and worst score
-       topscore = max(nodes(ants,2));
-       worstscore = min(nodes(ants,2));
-       bestAntsIndex = find(nodes(ants,2) == topscore));
        
+       %evaporate pheromones
+       nodes(:,3) = nodes(:,3) * evaporateFactor;
+
+       % Find the best and worst score, where the best score is the one
+       % with the lowest value
+       topscore = min(nodes(ants,2));
+       worstscore = max(nodes(ants,2));
+       % Find where the best ants are
+       bestAntsIndex = find(nodes(ants,2) == topscore);
        % Update the pheremones
-       nodes(paths(bestAntIndex,:),3) = nodes(paths(bestAntIndex,:),3) + scalingParameter * worstscore / topscore;
+       nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
+       
        iterationcount = iterationcount + 1;
     end
     
+    top = nodevals(paths(bestAntsIndex(1),end),:)
     topscore
     
 end
