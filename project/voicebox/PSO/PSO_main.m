@@ -21,7 +21,7 @@
 
 clear,close all,clc  %#ok<DUALC>
 
-parpool('local',2)
+%matlabpool('local', 4)
 
 [y, fs] = wavread('audio2.wav');
 duration = size(y,1)/fs;

@@ -3,12 +3,6 @@
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
 %  make per-parameter granularity?
-%  Example usage: 
-%  WHEN TRANSLATING TO PROBLEM:
-%   Make sure you use optimality as the edge cost, not improvement
-%   Make sure you're searching over the entire ant colony for the best
-%   soln
-%   that is all for now
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=acoSimple_sean(qgranularity)
  
@@ -17,6 +11,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     % anything less than 2 ants
     numberOfAnts = 5;
     numberOfLevels = 2;
+    explorationIterations = 1; % the amount of time to not use beta for
     
     %we want to generate a graph where each level represents a design
     %variable
@@ -70,13 +65,12 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     %worst function. Only the best ant gets it's function updated
     scalingParameter = 0.5; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
-    bestPath = ones(numberOfAnts, numberOfLevels) * -1;
     bestAntsIndex = ones(1, numberOfAnts) * -1;
     
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
        
-       if(iterationcount > 1)
+       if(iterationcount > explorationIterations)
            specialB = b;
        else
            specialB = 0;
@@ -144,7 +138,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                %levelId
                paths(aid,levelId) = next % save the path
            end
-           %ants
+           ants
           
        end
        
@@ -177,14 +171,15 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         
         %set the quantized value based on the parent and the levelId
         %should generate a value between -3 and +3
-        nodevals(i,levelId) = -3 + (6/s)*x;
+        nodevals(i,levelId) = -3 + (6/s)*x; %WTF, why not just use linspace?
         x = x + 1;
         
         opt = runSimpleBatch(nodevals(i, :));
-        %cost = opt - nodes(parentId, 2);
+        %cost = opt - nodes(parentId, 2); % This is the old way we used to
+        %cost the edges
         cost = opt;
         %opt
-        nodes(i, :) = [cost, opt, 1]; %normalize the cost to between 1 and 33
+        nodes(i, :) = [cost, opt, 1];
         
     end
 end

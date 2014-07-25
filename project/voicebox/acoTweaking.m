@@ -148,10 +148,6 @@ function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranula
 
            end
            ants
-          %reset pheromones
-           for i=1:size(nodes,1)
-               nodes(i,3) = 1;
-           end
 
            for z=ants
                if(topscore > nodes(z, 2))
