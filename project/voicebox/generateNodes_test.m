@@ -6,8 +6,8 @@ function [nodes, nodevals] = generateNodes_test(parentId, levelId, nodes, nchild
         nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
-        %should generate a value between -3 and +3
-        nodevals(i,levelId) = -2 + (4/s)*x; %WTF, why not just use linspace?
+        %should generate a value between -1 and +1
+        nodevals(i,levelId) = -1 + (2/s)*x; %WTF, why not just use linspace?
         x = x + 1;
         
         opt = runSimpleBatch(nodevals(i, :));
