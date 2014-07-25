@@ -8,7 +8,7 @@
 %
 %   Some work needs to be done to find out why
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=adaptiveGeneticTweaking(wavfilename, tagfilename, iterationmax, popsize, a, mrate)
+function [solutioncosts, solutions]=adaptiveGeneticTweaking(wavfilename, tagfilename, iterationmax, popsize, a, mrate)
     
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
@@ -46,6 +46,8 @@ function [solutioncost, solution]=adaptiveGeneticTweaking(wavfilename, tagfilena
     end
     
     mostfit = 0;
+    solutions = [];
+    solutioncosts = [];
     while(iteration < iterationmax && convergecount > 0 && max(fitnesses) < bestgoal)
         if(mostfit == pbestfitness)
             convergecount = convergecount - 1;
@@ -84,13 +86,18 @@ function [solutioncost, solution]=adaptiveGeneticTweaking(wavfilename, tagfilena
         
         iteration = iteration + 1
         [pbestfitness, si] = max(fitnesses)
-        solution = population(si)
+        solution = population(si);
+        
+        solutions = [solutions solution];
+        solutioncosts = [solutioncosts pbestfitness];
         
      
     end
     
     %change to run vad direct for graph
-    [solutioncost] =  runGeneticTweakingBatch(y, fs, duration, giventags, solution)
+    solutions = [solutions solution];
+    [solutioncost] =  runGeneticTweakingBatch(y, fs, giventags, solution);
+    solutioncosts = [solutioncosts solutioncost];
 end
 
 %stochastic sampling
@@ -178,8 +185,8 @@ function [child1, child2] = crossover(p1, p2, a, mrate)
     child1.iterationmax = ceil((p1.iterationmax * a) + (p2.iterationmax * (1-a)));
     child2.iterationmax = floor((p2.iterationmax * a) + (p1.iterationmax * (1-a)));
     
-    child1.iterationmax = (p1.mrate * a) + (p2.mrate * (1-a));
-    child2.iterationmax = (p2.mrate * a) + (p1.mrate * (1-a));
+    child1.mrate = (p1.mrate * a) + (p2.mrate * (1-a));
+    child2.mrate = (p2.mrate * a) + (p1.mrate * (1-a));
     
     
     [child1]=mutate(child1, mrate);
@@ -197,7 +204,7 @@ function [individual] =  generateRandomParameterSet()
     
 end
 
-function [fitnesses] = runGeneticTweakingBatch(y, fs, giventags, population)
+function [batchoptimality] = runGeneticTweakingBatch(y, fs, giventags, population)
     batchoptimality = zeros(1, size(population,2));
     %genetictweaking is already running on multiple threads, so no point to
     %parfor it here.
