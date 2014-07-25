@@ -139,7 +139,6 @@ function [solutioncost, solution]=acoSimple_sean(numberOfAnts, iterationmax, qgr
     
     top = nodevals(paths(bestAntsIndex(1),end),:)
     topscore = runSimpleBatch(top)
-    topscore
     
 end
 

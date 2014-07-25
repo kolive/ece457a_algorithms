@@ -88,8 +88,6 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
-       topscore
-       bestAnt = -1;
        
        if(iterationcount > 1)
            specialB = b;
@@ -98,13 +96,11 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
        end
     
        %an ant starts looking for food starting from home
-       ants(1, :) = ones(1, numberOfAnts)
-       
-       
+       ants(1, :) = ones(1, numberOfAnts);
+              
        %traverse the graph, one level per parameter
        for levelId=1:numberOfLevels
            aid = 0;
-           levelId
            for curId=ants
                aid = aid + 1;
                %select the next step based on ACO calculations
@@ -114,22 +110,12 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
                % p is the probability array
                p(1,:) = zeros(1,qgranularity);
                for i=nchildren(curId, :)
-                   if(i ~= 0)
-                       % equation take from slides
-                       p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
-                   else
-                       p(1,x) = 0;
-                   end
+                   % equation take from slides
+                   p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
                    x = x + 1;
                end
                x = 1;
-               psum = sum(p);
-               for i=nchildren(curId, :)
-                   if(i ~= 0)
-                       p(1,x) = (p(1,x)/psum(1));
-                   end
-                   x = x + 1;
-               end
+               p = p ./ sum(p);
 
                % Roulette wheel selection of next node to visit
                for i=2:size(p,2)
@@ -156,40 +142,17 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
                end
                ants(1, aid) = next;
                paths(aid,levelId) = next; % save the path
-           end
-           ants
-           
-           %evaporate pheromones
-           for i=1:size(nodes,1)
-               nodes(i,3) = nodes(i,3) * evaporateFactor;
-           end
-           
-           for z=ants
-               if(topscore > nodes(z, 2))
-                   topscore = nodes(z, 2);
-                   top = nodevals(z);
-               elseif(worstscore < nodes(z,2))
-                   worstscore = nodes(z, 2);
-               end
-           end
-           
-           % Update the pheremones % This iteration could totally be vectorized
-           bestPath = paths(bestAnt,:);
-           for antIndex=1:size(bestPath,1)
-               % If it isn't an empty path
-               if(bestPath(antIndex,1) > -1)
-                   for node = bestPath(antIndex,:)
-                       nodes(node,3) = scalingParameter * topscore / worstscore;
-                   end
-               end
-               bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-           end
+               ants
+           end     
+  
        end
+       
+       
        iterationcount = iterationcount + 1;
     end
     
-    topscore
-    runvadDirect(y, fs, duration,giventags, figh, top);
+    top = nodevals(paths(bestAntsIndex(1),end),:)
+    topscore = runvadDirect(y, fs, duration,giventags, figh, top);
     
 end
 
