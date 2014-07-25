@@ -4,12 +4,10 @@
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
 %  make per-parameter granularity?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoSimple_sean(qgranularity)
+function [solutioncost, solution]=acoSimple_sean(numberOfAnts, iterationmax, qgranularity)
  
-    iterationmax = 5;
     % because of the pheremone update, this algorithm won't work with
     % anything less than 2 ants
-    numberOfAnts = 5;
     numberOfLevels = 2;
     explorationIterations = 1; % the amount of time to not use beta for
     
@@ -92,7 +90,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
                %select the next step based on ACO calculations
            
                %calculate the transition probability of each child
-               p = calculateProbability_test(p, nchildren, curId, nodes, specialB);
+               p = calculateProbability_test(p, nchildren, curId, nodes, a, specialB);
 
                % Roulette wheel selection of next node to visit % replace with MATLAB
                % built-in function?
@@ -140,6 +138,7 @@ function [solutioncost, solution]=acoSimple_sean(qgranularity)
     end
     
     top = nodevals(paths(bestAntsIndex(1),end),:)
+    topscore = runSimpleBatch(top)
     topscore
     
 end

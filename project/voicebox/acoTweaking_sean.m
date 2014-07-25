@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgranularity, figh, animate)
+function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationmax, qgranularity, figh, animate)
     
     if(nargin < 3)
         qgranularity = 10;
@@ -19,8 +19,6 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgr
         figh(3) = figure;
     end
     
-    iterationmax = 50;
-    numberOfAnts = 10;
     numberOfLevels = 7;
     firstLevelSize = 5;
     [y, fs] = wavread(wavfilename);
@@ -77,14 +75,16 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, qgr
     a = 1.0; % How much you look at the pheremones
     b = 0.6; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
-    topscore = 1000;
+    topscore = -1;
+    worstscore = -1;
+    top = ones(1,numberOfLevels) * 100;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
-    scalingParameter = 2; % because that's what it was in the notes
+    scalingParameter = 0.5; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
-    bestPath = ones(numberOfAnts, numberOfLevels) * -1;
-    worstscore = 1000;
-    bestAnt = -1;
+    bestAntsIndex = ones(1, numberOfAnts) * -1;
+    % p is the probability array
+    p = zeros(1,qgranularity);
     
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
