@@ -7,19 +7,21 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationmax, qgranularity, figh, animate)
+function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity, figh, animate)
     
-    if(nargin < 3)
+    if(nargin < 5)
         qgranularity = 10;
     end
 
-    if(nargin < 4)
+    if(nargin < 6)
         figh(1) = figure;
         figh(2) = figure;
         figh(3) = figure;
     end
     
+    qgranularity
     numberOfLevels = 7;
+    explorationIterations = 1;
     firstLevelSize = 5;
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
@@ -71,91 +73,115 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
     visited(1) = 1; %mark the root node's children as generated
     
-    iterationList = [1 0:10:100];
+    % data collection stuff
+    bestScoreList = zeros(1,size(iterationList,2));
+    solutionNumList = zeros(1,size(iterationList,2));
+    
+    % initialization stuff
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
     b = 0.6; % How much you look at the score
     evaporateFactor = 0.9; % How much the pheremones evaporate per ant
     topscore = -1;
     worstscore = -1;
-    top = ones(1,numberOfLevels) * 100;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
     scalingParameter = 0.5; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
     bestAntsIndex = ones(1, numberOfAnts) * -1;
+    numberOfSolutions = 1 + qgranularity;
     % p is the probability array
     p = zeros(1,qgranularity);
     f = 1; %for loop counter
     fBest = 1000;
     fTop = [0,0];
 
-for iterationmax=iterationList
+    for iterationmax=iterationList
+        
+        while(iterationcount < iterationmax)
+           iteration = iterationcount %printing out and giving a different name
 
-    while(iterationcount < iterationmax)
-       iteration = iterationcount %printing out and giving a different name
-       
-       if(iterationcount > 1)
-           specialB = b;
-       else
-           specialB = 0;
-       end
-    
-       %an ant starts looking for food starting from home
-       ants(1, :) = ones(1, numberOfAnts);
-              
-       %traverse the graph, one level per parameter
-       for levelId=1:numberOfLevels
-           aid = 0;
-           for curId=ants
-               aid = aid + 1;
-               %select the next step based on ACO calculations
-           
-               %calculate the transition probability of each child
-               x = 1;
-               % p is the probability array
-               p(1,:) = zeros(1,qgranularity);
-               for i=nchildren(curId, :)
-                   % equation take from slides
-                   p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
-                   x = x + 1;
-               end
-               x = 1;
-               p = p ./ sum(p);
+           if(iterationcount > explorationIterations)
+               specialB = b;
+           else
+               specialB = 0;
+           end
 
-               % Roulette wheel selection of next node to visit
-               for i=2:size(p,2)
-                   if(i ~= 0)
-                       p(1,i) = (p(1,i-1) + p(1,i));
+           %an ant starts looking for food starting from home
+           ants(1, :) = ones(1, numberOfAnts);
+
+           %traverse the graph, one level per parameter
+           for levelId=1:numberOfLevels
+               aid = 0;
+               for curId=ants
+                   aid = aid + 1;
+                   %select the next step based on ACO calculations
+
+                   %calculate the transition probability of each child
+                   x = 1;
+                   % p is the probability array
+                   p(1,:) = zeros(1,qgranularity);
+                   for i=nchildren(curId, nchildren(curId,:) ~= 0)
+                       % equation take from slides
+                       p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
+                       x = x + 1;
                    end
-               end
-               choose = rand;
-               next = nchildren(curId, 1);
-               for i=2:size(p,2)
-                   if(choose < p(1,i) && choose >= p(1,i-1))
-                       next = nchildren(curId, i);
-                   end
-               end
+                   x = 1;
+                   p = p ./ sum(p);
 
-               %if the next step hasn't yet been visited, generate it's
-               %children
-               if(visited(next) == -1)
-                 %generates the children identifiers
-                 [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
-                 %generates child nodes
-                 [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
-                 visited(next) = 1;
-               end
-               ants(1, aid) = next;
-               paths(aid,levelId) = next; % save the path
-           end     
-  
-       end
-       
-       
-       iterationcount = iterationcount + 1;
+                   % Roulette wheel selection of next node to visit
+                   for i=2:size(p,2)
+                       if(i ~= 0)
+                           p(1,i) = (p(1,i-1) + p(1,i));
+                       end
+                   end
+                   choose = rand;
+                   next = nchildren(curId, 1);
+                   for i=2:size(p,2)
+                       if(choose < p(1,i) && choose >= p(1,i-1))
+                           next = nchildren(curId, i);
+                       end
+                   end
+
+                   %if the next step hasn't yet been visited, generate it's
+                   %children
+                   if(visited(next) == -1)
+                     %generates the children identifiers
+                     [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
+                     %generates child nodes
+                     [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
+                     numberOfSolutions = numberOfSolutions + qgranularity;
+                     visited(next) = 1;
+                   end
+                   ants(1, aid) = next;
+                   paths(aid,levelId) = next; % save the path
+               end     
+
+           end
+                      
+           %evaporate pheromones
+           nodes(:,3) = nodes(:,3) * evaporateFactor;
+
+           % Find the best and worst score, where the best score is the one
+           % with the lowest value
+           topscore = min(nodes(ants,2));
+           worstscore = max(nodes(ants,2));
+           % Find where the best ants are
+           bestAntsIndex = find(nodes(ants,2) == topscore);
+           % Update the pheremones
+           nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
+           if(fBest > topscore)
+               fBest = topscore;
+               fTop = nodevals(paths(bestAntsIndex(1),end));
+           end
+           iterationcount = iterationcount + 1;
+        end
+        solutionNumList(f) = numberOfSolutions;
+        bestScoreList(f) = fBest;
+        f = f + 1;
     end
-    
+    fBest
+    fTop
 end
 
 function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)
