@@ -185,14 +185,14 @@ function [bestScoreList, solutionNumList]=acoTweaking_sean(wavfilename, tagfilen
 end
 
 function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)
-
+    childs = nchildren(parentId, :);
+    s = size(childs, 2);
+    %nodevals = [nodevals; zeros(s,1)]; % not sure this saves time
     x = 1;
-    s = size(nchildren(parentId, :), 2);
-    maxopt = -1;
-    for i = nchildren(parentId, :)
+    for i = childs
+        %set the quantized value based on the parent and the levelId
         nodevals(i) = nodevals(parentId);
         
-        %set the quantized value based on the parent and the levelId
         if(levelId == 1)
             %of level
             nodevals(i).of = x;
@@ -210,11 +210,13 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
             
         x = x + 1;
         
-        opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
-        cost = opt - nodes(parentId, 2);
-        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
+        %opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
+        %cost = opt - nodes(parentId, 2); % not used anymore
+        %nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
     end
+    opt = runVadBatchDirect( y, fs, duration, giventags, nodevals(childs) );
+    nodes(childs, :) = [opt', opt', ones(s,1)]; %normalize the cost to between 1 and 201
 end
 
 function [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, startId, nodeId, qgranularity)

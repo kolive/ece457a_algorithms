@@ -2,9 +2,7 @@
 %  Author: Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granularity)
-    iterationmax = 100;
-    
+function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granularity, iterationmax)
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
     
@@ -33,8 +31,11 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
     globalbestsol = solution;
     neighbors = solution;
     
+    backupneighbors = []; %building a list of backup neighbors to search so we never run out of space
     %todo: should probably search old neighbors rather than terminate
-    while(iteration < iterationmax && globalbest > 5 && size(neighbors, 2) ~= 0)
+    while(iteration < iterationmax && globalbest > 5)
+        
+            
         tabuage = tabuage - 1;
         %get indices of valid tabus
         tabuindex = find(tabuage);
@@ -45,6 +46,12 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
         tabuscores = tabuscores(tabuindex);
         
         neighbors = generateNeighbors(solution, quant, duration);
+        if(size(neighbors, 2) == 0)
+            %start searching the backup neighborhood if we've run into a
+            %dead end
+            neighbors = backupneighbors;
+            backupneighbors = [];
+        end
         scores = runVadBatchDirect(y, fs, duration, giventags, neighbors)
         
         %aspiration
@@ -65,6 +72,7 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
                 globalbest = sval; 
                 globalbestsol = neighbors(si);
             end
+            
         end
         
         
@@ -75,6 +83,16 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
         tabuscores = [tabuscores sval];
         tabuage = [tabuage tabulength];
         solution = neighbors(si);
+        
+        %save some solutions to look at if we run into a dead end
+        if(size(backupneighbors, 2) < 8)
+            [scores, scoresi] = setdiff(scores, scores(si));
+            neighbors = neighbors(scoresi);
+            [sval2, si2] = min(scores);
+            %take the second best option and save it in the backup
+            %neighbors
+            backupneighbors = [backupneighbors neighbors];
+        end
         
         iteration = iteration + 1
         globalbest

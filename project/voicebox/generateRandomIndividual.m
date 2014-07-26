@@ -10,7 +10,7 @@ function [individual]=generateRandomIndividual(duration)
     % NOTE: we may want to make ti equal to what's used in the "good" file
     % NOTE: this may be a lot of stuff to search through. We may want to
     % focus on just a few of these parameters
-    %   individual.of = overlap factor, between 0 and 5
+    %   individual.of = overlap factor, between 1 and 5
     %   individual.ti = frame increment, between 0.001s and 0.01s
     %   individual.xn = a priori SNR, between 0 and 3db
     %   individual.gx = posterior SNR, between 10 and 1000

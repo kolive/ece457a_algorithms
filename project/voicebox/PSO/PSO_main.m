@@ -19,9 +19,11 @@
 % update_v_p  : updates position and velocities of particles
 % display_result : displays the results
 
-clear,close all,clc  %#ok<DUALC>
+%clear,close all,clc  %#ok<DUALC>
 
-%matlabpool('local', 4)
+function [fitness]=PSO_main(iteration_count, particle_count)
+
+close all
 
 [y, fs] = wavread('audio2.wav');
 duration = size(y,1)/fs;
@@ -29,6 +31,8 @@ duration = size(y,1)/fs;
 %read in the given tags to do a comparison
 giventags = dlmread('audio2.tag');
 
+%
+% BEST AUDIO1 RESULT
 % individual1.of= 5;
 % individual1.pr=0.7;  
 % individual1.ts= 0.101009157193833; 
@@ -41,43 +45,47 @@ giventags = dlmread('audio2.tag');
 % 
 % tags1 = vadsohn(y, fs, 'a', individual1);
 % vadOptimality(tags1, giventags, duration, 0)
+%
+%  BEST AUDIO2 RESULT (but not actually because format long as off :( )
+% individual3.of= 1;
+% individual3.pr=0.7;  
+% individual3.ts= 1.5515; 
+% individual3.tn= 0.0017;
+% individual3.ti= 0.0352;   
+% individual3.ri=0;       
+% individual3.ta=0.396;    
+% individual3.gx=28.5170;
+% individual3.xn=0.6902;
 % 
-% individual2.of= 5;
-% individual2.pr=0.7;  
-% individual2.ts= 0.084601922826471; 
-% individual2.tn= 0.037716553800475;
-% individual2.ti= 0.097467301085095;   
-% individual2.ri=0;       
-% individual2.ta=0.396;    
-% individual2.gx=2.222317263970447e+02;
-% individual2.xn=1.893211313813539;
-% 
-% tags2 = vadsohn(y, fs, 'a', individual2);
-% vadOptimality(tags2, giventags, duration, 0)
-% 
-% 
- individual3.of= 1;
- individual3.pr=0.7;  
- individual3.ts= 1.749950448283879; 
- individual3.tn= 0.002920524126776;
- individual3.ti= 0.023988731050853;   
- individual3.ri=0;       
- individual3.ta=0.396;    
- individual3.gx=26.861409178805921;
- individual3.xn=1.787472262730411;
- 
- tags3 = vadsohn(y, fs, 'a', individual3);
- vadOptimality2(tags3, giventags)
+% tags3 = vadsohn(y, fs, 'a', individual3);
+% vadOptimality2(tags3, giventags)
 
 figh = figure;
 plotenable = 0;
 tic
-for j = 1:30
+if (nargin == 0)
+    jmax = 20;
+else
+    jmax = 1;
+end
+for j = 1:jmax
     min_fitness = 10^10;
     min_individual = 0;
     count = 0;
-    [N,K,D,L,var,w_max,w_min,c1,c2,position,p_best,g_best,fitness,p_best_fit,...
-        Num_func,Min_Max_flag,Gl_Lo_flag] = PSO_initialize;
+    if (nargin > 0)
+        K = iteration_count;
+        if (nargin > 1)
+            N = particle_count;
+        else
+            N = K;
+        end
+    else
+        N = 110; % N is the number of the particles
+        K = 100; %K is the number of iteration
+    end
+    [D,L,var,w_max,w_min,c1,c2,position,p_best,g_best,fitness,p_best_fit,...
+        Num_func,Min_Max_flag,Gl_Lo_flag] = PSO_initialize(N,K);
+
     [v_max,x_max,velocity,] = PSO_range_func(Num_func,N,D) ;
     for k=1:K
         %disp([' Run ' , num2str(k) ])
@@ -95,18 +103,22 @@ for j = 1:30
         g_best=PSO_renewg_best(p_best,p_best_fit,N,Min_Max_flag,Gl_Lo_flag);
         [position,velocity]=PSO_update_v_p(D,N,c1,c2,w,p_best,g_best,position,velocity,v_max,Gl_Lo_flag);
     end
-    if Min_Max_flag == 1
-        best_fit(j,:) = min(fitness);   %#ok<SAGROW> 
-    else
-        best_fit(j,:) = min(fitness); %#ok<SAGROW>
+    if (nargin == 0)
+        if Min_Max_flag == 1
+            best_fit(j,:) = min(fitness);   %#ok<SAGROW> 
+        else
+            best_fit(j,:) = min(fitness); %#ok<SAGROW>
+        end
+        mean_fit(j,:) = mean(fitness); %#ok<SAGROW>
     end
-    mean_fit(j,:) = mean(fitness); %#ok<SAGROW>
     min_fitness
     min_individual
 end
 toc
-PSO_display_result(best_fit,mean_fit,K,Min_Max_flag)
-
+if (nargin == 0)
+    PSO_display_result(best_fit,mean_fit,K,Min_Max_flag)
+end
+end
 
 
 
