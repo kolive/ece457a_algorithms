@@ -32,10 +32,8 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
     neighbors = solution;
     
     backupneighbors = []; %building a list of backup neighbors to search so we never run out of space
-    %todo: should probably search old neighbors rather than terminate
+    
     while(iteration < iterationmax && globalbest > 5)
-        
-            
         tabuage = tabuage - 1;
         %get indices of valid tabus
         tabuindex = find(tabuage);
@@ -52,36 +50,43 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
             neighbors = backupneighbors;
             backupneighbors = [];
         end
-        scores = runVadBatchDirect(y, fs, duration, giventags, neighbors)
+        scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
         
-        %aspiration
-        %with current implementation, this aspiration criteria does
-        %nothing. need to come up with a better one
-        [sval, si] = min(scores);
-        if(ismember(sval,tabuscores) && sval < globalbest)
-            globalbest = sval;
-            globalbestsol = neighbors(si);
-        else
-            %regular tabu-minded selection
-            [nontabuscores, nontabuscoresi] = setdiff(scores, tabuscores);
-            neighbors = neighbors(nontabuscoresi);
-            scores = nontabuscores;
+        
+        %regular tabu-minded selection
+        [nontabuscores, nontabuscoresi] = setdiff(scores, tabuscores);
+        neighbors = neighbors(nontabuscoresi);
+        scores = nontabuscores;
 
-            [sval, si] = min(scores);
-            if(sval < globalbest)
-                globalbest = sval; 
-                globalbestsol = neighbors(si);
-            end
+        %if everything is tabu, pick a random tabu item
+        %aspiration!!!
+        if(size(scores,2) == 0)
+            in = randi(size(tabuscores, 2));
+            nin = linspace(1,size(tabuscores, 2), size(tabuscores, 2));
+            nin = setdiff(nin, in);
+            neighbors = tabulist(in);
             
+            tabulist = tabulist(nin);
+            tabuscores = tabuscores(nin);
+            tabuage = tabuage(nin);
+            
+            scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
+
+        end
+
+        [sval, si] = min(scores);
+        if(sval < globalbest)
+            globalbest = sval; 
+            globalbestsol = neighbors(si);
         end
         
         
         %add the solution to the tabu list
-        neighbors(si);
         tabulist = [tabulist neighbors(si)];
-        size(tabulist, 2);
         tabuscores = [tabuscores sval];
         tabuage = [tabuage tabulength];
+
+        
         solution = neighbors(si);
         
         %save some solutions to look at if we run into a dead end
