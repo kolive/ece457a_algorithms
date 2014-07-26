@@ -20,27 +20,7 @@ for i=1:N
 end
 
 parfor i=1:N
-%     switch Num_func
-%         case 1
-%             result = sum (X.^2);
-%         case 2
-%             result = sum(abs(X)) + prod(abs(X)) ;
-%         case 3
-%             result = 0 ;
-%             for ii=1:var
-%                 result = result + sum(X(1:ii)).^2;
-%             end
-%         case 4
-%             result = max (abs(X));
-%         case 5
-%             result = 0;
-%             for ii=1:var-1
-%                 result = result + 100*((X(ii+1)-X(ii)^2)^2+(X(ii)-1)^2);
-%             end
-%     end
-    
     tag = vadsohn(y, fs, 'a', individual(i));
-    
     fitness(i,k) = vadOptimality2(tag, giventags);
 end
 
