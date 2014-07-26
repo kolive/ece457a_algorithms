@@ -189,10 +189,12 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
     x = 1;
     s = size(nchildren(parentId, :), 2);
     maxopt = -1;
+    
+    % should be changed for "parfor"
     for i = nchildren(parentId, :)
+        %set the quantized value based on the parent and the levelId
         nodevals(i) = nodevals(parentId);
         
-        %set the quantized value based on the parent and the levelId
         if(levelId == 1)
             %of level
             nodevals(i).of = x;
@@ -210,11 +212,13 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
             
         x = x + 1;
         
-        opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
-        cost = opt - nodes(parentId, 2);
-        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
+        %opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
+        %cost = opt - nodes(parentId, 2); % not used anymore
+        %nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
     end
+    opt = runVadBatchDirect( y, fs, duration, giventags, nodevals(nchildren(parentId, :)) );
+    nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
 end
 
 function [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, startId, nodeId, qgranularity)
