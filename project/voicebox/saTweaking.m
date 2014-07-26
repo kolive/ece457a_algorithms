@@ -63,7 +63,8 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
 
         %fn+1(xn+1)
         scores = runVadBatchDirect(y, fs, duration, giventags, sols);
-        [cost_new, sol] = min(scores);
+        [cost_new, si] = min(scores);
+        sol = sols(si);
 
         % delta_f = fn+1(xn+1) - fn(xn)
         delta_cost = cost_new - cost_old;
