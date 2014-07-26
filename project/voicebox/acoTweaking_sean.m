@@ -71,6 +71,7 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
     visited(1) = 1; %mark the root node's children as generated
     
+    iterationList = [1 0:10:100];
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
     b = 0.6; % How much you look at the score
@@ -85,7 +86,12 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     bestAntsIndex = ones(1, numberOfAnts) * -1;
     % p is the probability array
     p = zeros(1,qgranularity);
-    
+    f = 1; %for loop counter
+    fBest = 1000;
+    fTop = [0,0];
+
+for iterationmax=iterationList
+
     while(iterationcount < iterationmax)
        iteration = iterationcount %printing out and giving a different name
        
@@ -142,7 +148,6 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
                end
                ants(1, aid) = next;
                paths(aid,levelId) = next; % save the path
-               ants
            end     
   
        end
@@ -150,9 +155,6 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
        
        iterationcount = iterationcount + 1;
     end
-    
-    top = nodevals(paths(bestAntsIndex(1),end),:)
-    topscore = runvadDirect(y, fs, duration,giventags, figh, top);
     
 end
 

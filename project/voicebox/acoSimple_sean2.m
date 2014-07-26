@@ -40,12 +40,13 @@ function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iteration
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nestVal = [2 1];
+    nestVal = [0 0];
     nest = runSimpleBatch(nestVal);
     nodes(nodeCount, :) = [0, nest, 1]; % note the pheremone level of the nest doesn't matter
     visited(nodeCount) = -1;
     nodevals(nodeCount, :) = nestVal;
     nchildren = ones(1,qgranularity);
+    bestAntsIndex = ones(1, numberOfAnts) * -1;
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
     [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
@@ -66,11 +67,7 @@ function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iteration
     topscore = -1;
     worstscore = -1;
     top = ones(1,numberOfLevels) * 100;
-    %for the pheremone update, we have to keep track of the best and
-    %worst function. Only the best ant gets it's function updated
-    scalingParameter = 0.5; % because it's converging way too fast
-    paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
-    bestAntsIndex = ones(1, numberOfAnts) * -1;
+    pdeposit = 0.3;
     numberOfSolutions = 1 + qgranularity;
     % p is the probability array
     p = zeros(1,qgranularity);
@@ -127,8 +124,7 @@ function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iteration
                      visited(next) = 1;
                    end
                    ants(1, aid) = next;
-                   %levelId
-                   paths(aid,levelId) = next; % save the path
+                   nodes(curId, 3) = nodes(curId, 3) + pdeposit; %todo play with pheromone deposit levels
                end
 
            end
@@ -142,11 +138,9 @@ function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iteration
            worstscore = max(nodes(ants,2));
            % Find where the best ants are
            bestAntsIndex = find(nodes(ants,2) == topscore);
-           % Update the pheremones
-           nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
            if(fBest > topscore)
                fBest = topscore
-               fTop = nodevals(paths(bestAntsIndex(1),end),:)
+               %fTop = nodevals(paths(bestAntsIndex(1),end),:)
            end
            ants
            iterationcount = iterationcount + 1;
