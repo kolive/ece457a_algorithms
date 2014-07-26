@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity, figh, animate)
+function [bestScoreList, solutionNumList]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity, figh, animate)
     
     if(nargin < 5)
         qgranularity = 10;
