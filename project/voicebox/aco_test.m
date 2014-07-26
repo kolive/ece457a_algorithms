@@ -30,7 +30,7 @@ function [success] = aco_test()
     
     [nodes, nodevals] = generateNodes_test(1, 1, nodes, nchildren, nodevals);
     
-    nodes_pass = all(all((abs(acc_nodes - nodes) < 0.0001))) %wtf, this is passing
+    nodes_pass = all(all((abs(acc_nodes - nodes) < 0.0001)))
     nodevals_pass = all(all(abs(acc_nodevals - nodevals) < 0.0001))
     
     % generate probabilities

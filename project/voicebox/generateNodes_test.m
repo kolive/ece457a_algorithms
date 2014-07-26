@@ -1,21 +1,20 @@
 function [nodes, nodevals] = generateNodes_test(parentId, levelId, nodes, nchildren, nodevals)
+    childs = nchildren(parentId, :);
+    s = size(childs, 2);
+    nodevals = [nodevals; zeros(s,2)]; % change 2 to 1 for real stuff
+    %There's no way around this for loops, beause for the real application
+    %we are using structs and there's no clever way to assign those
+    %and there's no way to make it parallel either because of the way it's
+    %iterating
+    % would linspace make a difference here?
     x = 1;
-    s = size(nchildren(parentId, :), 2);
-    % This could probably be vectorized
-    for i = nchildren(parentId, :)
+    for i = childs
         nodevals(i,:) = nodevals(parentId, :);
-        
-        %set the quantized value based on the parent and the levelId
         %should generate a value between -1 and +1
         nodevals(i,levelId) = -1 + (2/s)*x; %WTF, why not just use linspace?
         x = x + 1;
-        
-        opt = runSimpleBatch(nodevals(i, :));
-        %cost = opt - nodes(parentId, 2); % This is the old way we used to
-        %cost the edges
-        cost = opt;
-        %opt
-        nodes(i, :) = [cost, opt, 1];
-        
     end
+    
+    opt = runSimpleBatch(nodevals(childs, :));
+    nodes(childs, :) = [opt', opt', ones(s,1)];
 end
