@@ -22,7 +22,7 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
     %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     % want lowest optimality value for Tabu Search
     iteration = 1;
-    tabulength = 8;
+    tabulength = granularity;
     [optimality] = runVadBatchDirect(y, fs, duration, giventags, solution);
     tabulist = [solution];
     tabuscores = [optimality];
