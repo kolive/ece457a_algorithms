@@ -2,35 +2,14 @@
 %  Author: Kyle Olive
 %  Date: Sometime after the fall of Rome
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
-%  make per-parameter granularity? Change the pheremone deposit (only best ant?) to
-%  what's been shown in the slides.
-%  Example usage: 
-%
+%  make per-parameter granularity?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity, figh, animate)
-    
-    if(nargin < 5)
-        qgranularity = 10;
-    end
-
-    if(nargin < 6)
-        figh(1) = figure;
-        figh(2) = figure;
-        figh(3) = figure;
-    end
-    
-    qgranularity
-    numberOfLevels = 7;
-    explorationIterations = 1;
-    firstLevelSize = 5;
-    [y, fs] = wavread(wavfilename);
-    duration = size(y,1)/fs;
-    
-    %read in the given tags to do a comparison
-    giventags = dlmread(tagfilename);
-
-    %generate the nest node, let's use the default soln
-    nest = genInitialSolution();
+function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iterationList, qgranularity)
+ 
+    % because of the pheremone update, this algorithm won't work with
+    % anything less than 2 ants
+    numberOfLevels = 2;
+    explorationIterations = 4; % the amount of time to not use beta for
     
     %we want to generate a graph where each level represents a design
     %variable
@@ -44,10 +23,12 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     % initially all -1
     % when a node is visited, generate the children of that node and update
     % the indexes in graph
-    % nodes(i,:) = [edgeCost, solutionCost, pheremoneLevel]
-    % nodevals(i) = solution
-    % children(i, :) = [quantization level cols with indexes to children]
+    % nodes(i,:) = [edgecost, solutioncost, pheremoneLevel] %edgecost and
+    % solutioncost are the same thing now
+    % nodevals(i,:) = parameters_to_plug_in
+    % nchildren(i, :) = [quantization level cols with indexes to children]
     % visited(i, :) = [-1 if child nodes have been generated, 0 otherwise]
+    % p = probability array for children
     
     %the first level is populated manually, contains of values
     % children for each of those nodes are initialized to -1
@@ -59,43 +40,41 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     %initialize root
     nodeCount = 1;
     levelId = 1;
-    nodes(nodeCount, :) = [0, runVadBatchDirect(y, fs, duration,giventags, nest), 1];
+    nestVal = [0 0];
+    nest = runSimpleBatch(nestVal);
+    nodes(nodeCount, :) = [0, nest, 1]; % note the pheremone level of the nest doesn't matter
     visited(nodeCount) = -1;
-    nodevals(nodeCount) = nest;
-    nchildren(nodeCount, :) = ones(1, firstLevelSize) * -1; % make null children (to specify amount), may not be necessary?
-
-    
+    nodevals(nodeCount, :) = nestVal;
+    nchildren = ones(1,qgranularity);
+    bestAntsIndex = ones(1, numberOfAnts) * -1;
     %generates the children identifiers, 5 for the first level since of is
     %whole numbers from 1 to 5
-    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, firstLevelSize); 
+    [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, 1, qgranularity); 
     
-    %we need to generate all the first layer nodes (of)
-    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
+    %we need to generate all the first layer of nodes
+    [nodes, nodevals] = generateNodes(1, levelId, nodes, nchildren, nodevals);
     visited(1) = 1; %mark the root node's children as generated
     
     % data collection stuff
     bestScoreList = zeros(1,size(iterationList,2));
     solutionNumList = zeros(1,size(iterationList,2));
     
-    % initialization stuff
+    % initializatio stuff
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.6; % How much you look at the score
-    evaporateFactor = 0.9; % How much the pheremones evaporate per ant
+    b = 1.0; % How much you look at the score
+    evaporateFactor = 0.5; % How much the pheremones evaporate per ant
     topscore = -1;
     worstscore = -1;
-    %for the pheremone update, we have to keep track of the best and
-    %worst function. Only the best ant gets it's function updated
-    scalingParameter = 0.5; % because that's what it was in the notes
-    paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
-    bestAntsIndex = ones(1, numberOfAnts) * -1;
+    top = ones(1,numberOfLevels) * 100;
+    pdeposit = 0.3;
     numberOfSolutions = 1 + qgranularity;
     % p is the probability array
     p = zeros(1,qgranularity);
     f = 1; %for loop counter
     fBest = 1000;
     fTop = [0,0];
-
+    
     for iterationmax=iterationList
         
         while(iterationcount < iterationmax)
@@ -108,6 +87,7 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
            end
 
            %an ant starts looking for food starting from home
+           %this array will hold where the ant currently is
            ants(1, :) = ones(1, numberOfAnts);
 
            %traverse the graph, one level per parameter
@@ -118,22 +98,12 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
                    %select the next step based on ACO calculations
 
                    %calculate the transition probability of each child
-                   x = 1;
-                   % p is the probability array
-                   p(1,:) = zeros(1,qgranularity);
-                   for i=nchildren(curId, nchildren(curId,:) ~= 0)
-                       % equation take from slides
-                       p(1,x) = (nodes(i, 3)^a) * ((1/nodes(i,1))^specialB);
-                       x = x + 1;
-                   end
-                   x = 1;
-                   p = p ./ sum(p);
+                   p = calculateProbability_test(p, nchildren, curId, nodes, a, specialB);
 
-                   % Roulette wheel selection of next node to visit
+                   % Roulette wheel selection of next node to visit % replace with MATLAB
+                   % built-in function?
                    for i=2:size(p,2)
-                       if(i ~= 0)
-                           p(1,i) = (p(1,i-1) + p(1,i));
-                       end
+                       p(1,i) = (p(1,i-1) + p(1,i));
                    end
                    choose = rand;
                    next = nchildren(curId, 1);
@@ -149,16 +119,16 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
                      %generates the children identifiers
                      [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, nodeCount, next, qgranularity); 
                      %generates child nodes
-                     [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
+                     [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals);
                      numberOfSolutions = numberOfSolutions + qgranularity;
                      visited(next) = 1;
                    end
                    ants(1, aid) = next;
-                   paths(aid,levelId) = next; % save the path
-               end     
+                   nodes(curId, 3) = nodes(curId, 3) + pdeposit; %todo play with pheromone deposit levels
+               end
 
            end
-                      
+           
            %evaporate pheromones
            nodes(:,3) = nodes(:,3) * evaporateFactor;
 
@@ -168,12 +138,11 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
            worstscore = max(nodes(ants,2));
            % Find where the best ants are
            bestAntsIndex = find(nodes(ants,2) == topscore);
-           % Update the pheremones
-           nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
            if(fBest > topscore)
-               fBest = topscore;
-               fTop = nodevals(paths(bestAntsIndex(1),end));
+               fBest = topscore
+               %fTop = nodevals(paths(bestAntsIndex(1),end),:)
            end
+           ants
            iterationcount = iterationcount + 1;
         end
         solutionNumList(f) = numberOfSolutions;
@@ -182,37 +151,29 @@ function [solutioncost, solution]=acoTweaking_sean(wavfilename, tagfilename, num
     end
     fBest
     fTop
+    fTop
+    
 end
 
-function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)
-
+function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals)
     x = 1;
     s = size(nchildren(parentId, :), 2);
-    maxopt = -1;
+    % This could probably be vectorized
+    % For every child in this parent
     for i = nchildren(parentId, :)
-        nodevals(i) = nodevals(parentId);
+        nodevals(i,:) = nodevals(parentId, :);
         
         %set the quantized value based on the parent and the levelId
-        if(levelId == 1)
-            %of level
-            nodevals(i).of = x;
-        elseif(levelId == 2)
-            nodevals(i).ts = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 3)
-            nodevals(i).tn = 0.001 + ((duration/2)/s)*x;
-        elseif(levelId == 4)
-            nodevals(i).ti = 10e-3 + ((10e-2 - 10e-3)/s)*x;
-        elseif(levelId == 5)
-            nodevals(i).gx = 10 + ((1000 - 10)/s)*x;
-        elseif(levelId == 6)
-            nodevals(i).xn = (1.995262/s)*x;
-        end
-            
+        %should generate a value between -2 and +2
+        nodevals(i,levelId) = -2 + (4/s)*x; %WTF, why not just use linspace?
         x = x + 1;
         
-        opt = runVadBatchDirect(y, fs, duration, giventags, nodevals(i));
-        cost = opt - nodes(parentId, 2);
-        nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
+        opt = runSimpleBatch(nodevals(i, :));
+        %cost = opt - nodes(parentId, 2); % This is the old way we used to
+        %cost the edges
+        cost = opt;
+        %opt
+        nodes(i, :) = [cost, opt, 1];
         
     end
 end
@@ -225,5 +186,4 @@ function [nchildren, visited, nodeCount] = generateChildren(nchildren, visited, 
         x = x + 1;
         nodeCount = i;
     end
-    
 end
