@@ -1,7 +1,6 @@
 function [fitness,min_fitness,min_individual, count]=PSO_evaluate(position,k,N,D,L,var,x_max,fitness,y, fs, duration, giventags,Num_func,min_fitness, min_individual, count, plotenable, figh, iteration)
 count = count + 1;
 
-tags = ones(N, 2);
 X = ones(N, var);
 
 for i=1:N
@@ -19,6 +18,7 @@ for i=1:N
     individual(i).gx=10 + ((1000 - 10)*X(i,5));
     individual(i).xn=1.995262 * X(i,6);
 end
+
 parfor i=1:N
 %     switch Num_func
 %         case 1
@@ -38,16 +38,17 @@ parfor i=1:N
 %                 result = result + 100*((X(ii+1)-X(ii)^2)^2+(X(ii)-1)^2);
 %             end
 %     end
-
-    tags(i) = vadsohn(y, fs, 'a', individual(i));
     
-    fitness(i,k) = vadOptimality2(tags(i), giventags);
+    tag = vadsohn(y, fs, 'a', individual(i));
+    
+    fitness(i,k) = vadOptimality2(tag, giventags);
 end
 
 for i=1:N
     if fitness(i, k) < min_fitness
         gt = [giventags; 1.1];
-        ct = [tags(i); 1.1];
+        tags = vadsohn(y, fs, 'a', individual(i));
+        ct = [tags; 1.1];
         min_fitness = fitness(i, k);
         min_individual = individual(i);
         count = 0;
