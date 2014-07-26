@@ -81,7 +81,7 @@ function [bestScoreList, solutionNumList]=acoTweaking_sean(wavfilename, tagfilen
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
     b = 0.6; % How much you look at the score
-    evaporateFactor = 0.9; % How much the pheremones evaporate per ant
+    evaporateFactor = 0.95; % How much the pheremones evaporate per ant
     topscore = -1;
     worstscore = -1;
     %for the pheremone update, we have to keep track of the best and
