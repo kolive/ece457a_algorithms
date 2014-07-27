@@ -28,23 +28,23 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
     sols = sol;
 
     % parameters to tweak
-    max_iter = 100;
-    max_accept = 15;
-    max_rej = 100;
+    max_iter = 5;
+    max_accept = 2;
+    max_rej = 5;
 
     T = 1;
     T_min = 1e-10;
 
-    alpha = 0.95;
+    alpha = 0.30;
 
     % worst case is 100% error
     sol_cost = 100;
     cost_old = sol_cost;
     cost_new = sol_cost;
 
-    fig(1) = figure;
-    fig(2) = figure;
-    fig(3) = figure;
+    % fig(1) = figure;
+    % fig(2) = figure;
+    % fig(3) = figure;
 
     while ((rej <= max_rej) & (T > T_min))
         iter = iter + 1;
@@ -63,6 +63,7 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
 
         %fn+1(xn+1)
         scores = runVadBatchDirect(y, fs, duration, giventags, sols);
+        %TODO: because of this, it gets stuck alternating between solutions
         [cost_new, si] = min(scores);
         sol = sols(si);
 
@@ -71,7 +72,6 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
 
         % accept new solution if it's better
         if (delta_cost < 0)
-          % TODO: need the conditional?
           if (sol_cost > cost_new)
             best_sol = sol;
             sol_cost = cost_new;
@@ -82,7 +82,7 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
           rej = 0;
         % accept if p=exp(-delta_f/T) > r
         elseif (exp(-delta_cost / T) > rand)
-          cost_old = cost_new;
+          sol
           accept = accept + 1;
         else
           rej = rej + 1;
