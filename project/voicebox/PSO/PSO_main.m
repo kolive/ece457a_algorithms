@@ -89,7 +89,7 @@ for j = 1:jmax
     [v_max,x_max,velocity,] = PSO_range_func(Num_func,N,D) ;
     for k=1:(10*K)
         %disp([' Run ' , num2str(k) ])
-        w = w_max+(((w_min-w_max)*(k-1))/(min(K, 50)-1));
+        w = w_max+(((w_min-w_max)*(min(k, 50)-1))/(K-1));
         iteration = k;
         [fitness, min_fitness, min_individual, count] = ...
             PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...

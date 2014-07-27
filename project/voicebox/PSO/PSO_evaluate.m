@@ -8,7 +8,7 @@ for i=1:N
         temp=position(i,(j-1)*L+1:j*L);
         X(i,j)=PSO_decode(temp,L,x_max) + 0.5; 
     end
-    individual(i).of= floor(10 * X(i,1)) + 1; %I think this needs to be a whole number
+    individual(i).of= floor(5 * X(i,1)) + 1; %I think this needs to be a whole number
     individual(i).pr=0.7;
     individual(i).ts= duration/2 * X(i,2); 
     individual(i).tn= duration/2 * X(i,3);
