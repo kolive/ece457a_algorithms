@@ -66,7 +66,7 @@ tic
 if (nargin == 0)
     jmax = 20;
 else
-    jmax = 1;
+    jmax = 20;
 end
 for j = 1:jmax
     min_fitness = 10^10;
@@ -80,25 +80,29 @@ for j = 1:jmax
             N = K;
         end
     else
-        N = 110; % N is the number of the particles
-        K = 100; %K is the number of iteration
+        N = 20; % N is the number of the particles
+        K = 50; %K is the number of iteration
     end
     [D,L,var,w_max,w_min,c1,c2,position,p_best,g_best,fitness,p_best_fit,...
         Num_func,Min_Max_flag,Gl_Lo_flag] = PSO_initialize(N,K);
 
     [v_max,x_max,velocity,] = PSO_range_func(Num_func,N,D) ;
-    for k=1:K
+    for k=1:(10*K)
         %disp([' Run ' , num2str(k) ])
-        w = w_max+(((w_min-w_max)*(k-1))/(K-1));
+        w = w_max+(((w_min-w_max)*(k-1))/(min(K, 50)-1));
         iteration = k;
         [fitness, min_fitness, min_individual, count] = ...
             PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...
                          fs, duration, giventags, Num_func, min_fitness, ...
                          min_individual, count, plotenable, figh, iteration);
-%         if count == 20
-%             disp(['done at ', num2str(k - 20), ' iterations ' ])
-%             break;
-%         end
+        if count == 50
+            disp(['done at ', num2str(k - 50), ' iterations ' ])
+            disp(['fitness at ', num2str(k - 50), ': ', num2str(min_fitness) ])
+            break;
+        end
+        if k == 50
+            disp(['fitness at 50: ', num2str(min_fitness) ])
+        end
         [p_best,p_best_fit] = PSO_renewp_best(D,fitness,p_best,N,k,position,p_best_fit,Min_Max_flag);
         g_best=PSO_renewg_best(p_best,p_best_fit,N,Min_Max_flag,Gl_Lo_flag);
         [position,velocity]=PSO_update_v_p(D,N,c1,c2,w,p_best,g_best,position,velocity,v_max,Gl_Lo_flag);
@@ -111,8 +115,8 @@ for j = 1:jmax
         end
         mean_fit(j,:) = mean(fitness); %#ok<SAGROW>
     end
-    min_fitness
-    min_individual
+    %min_fitness
+    %min_individual
 end
 toc
 if (nargin == 0)
