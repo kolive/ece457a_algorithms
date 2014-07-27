@@ -7,8 +7,9 @@
 %   generate a child better than in the original random population.
 %
 %   Some work needs to be done to find out why
+%   HOW TO SAVE GRAPH?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename, iterationmax, popsize, a, mrate)
+function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename, iterationmax, popsize, a, mrate, gran)
     
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
@@ -32,7 +33,28 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
     maxconvergecount = 0.2*iterationmax;
     convergecount = maxconvergecount;
     
-    [fitnesses] = runAcoTweakingBatch(y, fs, giventags, population);
+    % check if the graph file exists
+    
+    if(exist(['nodes_' num2str(gran) '.bin'],'file') == 2)
+        %read in graph file
+        fileID = fopen(['nodes_' num2str(gran) '.bin']);
+        nodes = fread(fileID);
+        fclose(fileID);
+        fileID = fopen(['nchildren_' num2str(gran) '.bin']);
+        nchildren = fread(fileID,[3 3],'double');
+        fclose(fileID);
+        fileID = fopen(['nodevals_' num2str(gran) '.bin']);
+        nodevals = fread(fileID,[3 3],'double');
+        fclose(fileID);
+        fileID = fopen(['nodeCount_' num2str(gran) '.bin']);
+        nodeCount = fread(fileID,[3 3],'double');
+        fclose(fileID);
+        
+        [fitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount);
+    else
+        [fitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, [0,0], 0, 0, 0);
+    end
+    
     %we will have our stopping criteria be a parameter set that is 80%
     %better than the initial best
     stoppingGoal = 0.2*min(fitnesses); %output for user
@@ -66,7 +88,7 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
 
         %generate children
         [children] = generateChildren(selectedpop,a, mrate);
-        cfitnesses = runGeneticTweakingBatch(y, fs, giventags, children);
+        [cfitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, children, gran, nodes, nchildren, nodevals, nodeCount);
         cfitnesses = 1./(1+cfitnesses);
 
         indices = linspace(1, size(population,2), size(population,2));
@@ -94,10 +116,24 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
      
     end
     
-    %change to run vad direct for graph
     solutions = [solutions solution];
-    [solutioncost] =  runGeneticTweakingBatch(y, fs, giventags, solution);
+    [solutioncost, nodes, nchildren, nodevals, nodeCount] =  runAcoTweakingBatch(y, fs, giventags, solution, gran, nodes, nchildren, nodevals, nodeCount);
     solutioncosts = [solutioncosts solutioncost];
+    
+    %serialize the graph
+    fileID = fopen(['nodes_' num2str(gran) '.bin']);
+    fwrite(fileID,nodes);
+    fclose(fileID);
+    fileID = fopen(['nchildren_' num2str(gran) '.bin']);
+    fwrite(fileID,nchildren);
+    fclose(fileID);
+    fileID = fopen(['nodevals_' num2str(gran) '.bin']);
+    fwrite(fileID,nchildren);
+    fclose(fileID);
+    fileID = fopen(['nodeCount_' num2str(gran) '.bin']);
+    fwrite(fileID,nchildren);
+    fclose(fileID);
+    
 end
 
 %stochastic sampling
@@ -137,7 +173,7 @@ function [selectedpop, rindex]=populationSelection(population, fitnesses, count)
     % this might limit the gene pool, but we have a fairly high mutation
     % rate
     
-    [sortedlist, sindex] = sort(fitnesses, 2);
+    [~, sindex] = sort(fitnesses, 2);
     for y=1:count
         i = sindex(size(fitnesses, 2) - y + 1);
         selectedpop = [selectedpop population(i)];
@@ -163,56 +199,56 @@ function [pchildren] = generateChildren(population,a, mrate)
 
 end
 
-%TODO:
 function [child] = mutate(child, mrate)
     % generate rand number, if number < mrate, mutate the child
     if (rand < mrate)
-       child.popsize = floor(child.popsize + ((rand - rand) * child.popsize));
-       child.a = child.a + ((rand - rand) * child.a);
-       child.iterationmax = ceil(child.iterationmax + ((rand - rand) * child.iterationmax));
-       child.mrate = child.mrate + ((rand - rand) * child.mrate);
+       child.alpha = child.alpha + ((rand - rand) * child.alpha);
+       child.beta = child.beta + ((rand - rand) * child.beta);
+       child.eva = child.eva + ((rand - rand) * child.eva);
+       child.scal = child.scal + ((rand - rand) * child.scal);
+       child.ants = ceil(child.ants + ((rand - rand) * child.ants));
     end
 end
 
 function [child1, child2] = crossover(p1, p2, a, mrate)
     
-    child1.popsize = floor((p1.popsize * a) + (p2.popsize * (1-a)));
-    child2.popsize = ceil((p2.popsize * a) + (p1.popsize * (1-a)));
+    child1.alpha = (p1.alpha * a) + (p2.alpha * (1-a));
+    child2.alpha = (p2.alpha * a) + (p1.alpha * (1-a));
     
-    child1.a = (p1.a * a) + (p2.a * (1-a));
-    child2.a = (p2.a * a) + (p1.a * (1-a));
+    child1.beta = (p1.beta * a) + (p2.beta * (1-a));
+    child2.beta = (p2.beta * a) + (p1.beta * (1-a));
     
-    child1.iterationmax = ceil((p1.iterationmax * a) + (p2.iterationmax * (1-a)));
-    child2.iterationmax = floor((p2.iterationmax * a) + (p1.iterationmax * (1-a)));
+    child1.eva = (p1.eva * a) + (p2.eva * (1-a));
+    child2.eva = (p2.eva * a) + (p1.eva * (1-a));
     
-    child1.mrate = (p1.mrate * a) + (p2.mrate * (1-a));
-    child2.mrate = (p2.mrate * a) + (p1.mrate * (1-a));
+    child1.scal = (p1.scal * a) + (p2.scal * (1-a));
+    child2.scal = (p2.scal * a) + (p1.scal * (1-a));
     
+    child1.ants = ceil((p1.ants * a) + (p2.ants * (1-a)));
+    child2.ants = floor((p2.ants * a) + (p1.ants * (1-a)));
     
     [child1]=mutate(child1, mrate);
     [child2]=mutate(child2, mrate);
 end
 
-
 function [individual] =  generateRandomParameterSet()
-    individual.popsize = floor(10 + (150 * rand)); %population between 10 and 160
-    individual.a = min(1, 0.01 + rand); %coefficient of crossover between 0.01 and 1
-    individual.iterationmax = ceil(50 + (500 * rand)); %max iterations between 50 and 550
-    
-    individual.mrate = individual.popsize - ((individual.popsize-8)*rand); 
-    individual.mrate = 1/individual.mrate; %mrate between 1/8 and 1/individual.popsize
-    
+    individual.alpha = min(2, (0.5*rand)); %between 2 and 0.5
+    individual.beta = min(1, 0.01 + rand); %between 0.1 and 1
+    individual.eva = min(0.99, 0.1 + rand); %between 0.1 and 0.99
+    individual.scal = (0.5 + (1.5 * rand)); %between 0.5 and 1.5
+    individual.ants = ceil(2 + (18 * rand)); %between 2 and 20
 end
 
-function [batchoptimality] = runGeneticTweakingBatch(y, fs, giventags, population)
+function [batchoptimality, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount)
     batchoptimality = zeros(1, size(population,2));
     %genetictweaking is already running on multiple threads, so no point to
     %parfor it here.
     for i=1:size(population,2)
-        iterationmax = population(i).iterationmax;
-        popsize = population(i).popsize;
-        a = population(i).a;
-        mrate = population(i).mrate;
-        [batchoptimality(i), f] = geneticTweakingDirect(y, fs, giventags, iterationmax, popsize, a, mrate);
+        alpha = population(i).alpha;
+        beta = population(i).beta;
+        evaporationConstant = population(i).eva;
+        scalingParameter = population(i).scal;
+        numberOfAnts = population(i).ants;
+        [batchoptimality(i), nodes, nchildren, nodevals, nodeCount] = acoTweakingDirect(y, fs, giventags, alpha, beta, evaporationConstant, scalingParameter, numberOfAnts, 40, gran, nodes, nchildren, nodevals, nodeCount);
     end
 end
