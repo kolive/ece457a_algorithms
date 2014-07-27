@@ -19,6 +19,6 @@ function [batchoptimality] = runVadBatch(wavfilename, tagfilename, population)
     batchoptimality = zeros(1, size(population,2));
     parfor i=1:size(population,2)
         tags = vadsohn(y, fs, 'a', population(i));
-        batchoptimality(i) = vadOptimality(tags, giventags, duration, 0);
+        batchoptimality(i) = vadOptimality2(tags, giventags);
     end
 end
