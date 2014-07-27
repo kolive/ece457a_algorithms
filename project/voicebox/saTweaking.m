@@ -27,15 +27,15 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
     rej = 0;
     sols = sol;
 
-    % parameters to tweak
-    max_iter = 5;
-    max_accept = 2;
-    max_rej = 5;
+    % iteration parameters to tweak
+    max_iter = 50;
+    max_accept = 30;
+    max_rej = 50;
 
+    % temperature parameters to tweak
     T = 1;
-    T_min = 1e-10;
-
-    alpha = 0.30;
+    T_min = 0.25;
+    alpha = 0.9;
 
     % worst case is 100% error
     sol_cost = 100;
@@ -47,45 +47,51 @@ function [sol_cost, best_sol]=saTweaking(wavfilename, tagfilename, granularity)
     % fig(3) = figure;
 
     while ((rej <= max_rej) & (T > T_min))
-        iter = iter + 1;
-
-        if (iter >= max_iter) | (accept >= max_accept)
-          % geometric cooling
-          T = alpha * T;
-          total_iter = total_iter + iter;
-
-          iter = 1;
-          accept = 1;
-        end
-
         % xn+1 = xn + randn
         sols = generateNeighbors(sol, quant, duration);
 
         %fn+1(xn+1)
-        scores = runVadBatchDirect(y, fs, duration, giventags, sols);
-        %TODO: because of this, it gets stuck alternating between solutions
-        [cost_new, si] = min(scores);
-        sol = sols(si);
+        for i=1:size(sols,2)
+          iter = iter + 1;
 
-        % delta_f = fn+1(xn+1) - fn(xn)
-        delta_cost = cost_new - cost_old;
+          if (iter >= max_iter) | (accept >= max_accept)
+            % geometric cooling
+            T = alpha * T;
+            total_iter = total_iter + iter;
 
-        % accept new solution if it's better
-        if (delta_cost < 0)
-          if (sol_cost > cost_new)
-            best_sol = sol;
-            sol_cost = cost_new;
+            iter = 1;
+            accept = 1;
           end
 
-          cost_old = cost_new;
-          accept = accept + 1;
-          rej = 0;
-        % accept if p=exp(-delta_f/T) > r
-        elseif (exp(-delta_cost / T) > rand)
-          sol
-          accept = accept + 1;
-        else
-          rej = rej + 1;
+          sol = sols(i);
+
+          % add sol to list of recent sols
+          % if sol already is on list, continue
+          % increment count of skipped
+          % if skipped is greater than a threshold, increase temperature
+          cost_new = runVadBatchDirect(y, fs, duration, giventags, sol);
+
+          % delta_f = fn+1(xn+1) - fn(xn)
+          delta_cost = cost_new - cost_old;
+
+          % accept new solution if it's better
+          if (delta_cost < 0)
+            if (sol_cost > cost_new)
+              best_sol = sol;
+              sol_cost = cost_new;
+            end
+
+            cost_old = cost_new;
+            accept = accept + 1;
+            rej = 0;
+          % accept if p=exp(-delta_f/T) > r
+          elseif (exp(-delta_cost / T) > rand)
+            cost_old = cost_new;
+            accept = accept + 1;
+            break;
+          else
+            rej = rej + 1;
+          end
         end
     end
 
