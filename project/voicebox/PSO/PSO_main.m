@@ -89,19 +89,18 @@ for j = 1:jmax
     [v_max,x_max,velocity,] = PSO_range_func(Num_func,N,D) ;
     for k=1:(10*K)
         %disp([' Run ' , num2str(k) ])
-        w = w_max+(((w_min-w_max)*(k-1))/(min(K, 50)-1));
+        w = w_max+(((w_min-w_max)*(min(k, 50)-1))/(K-1));
         iteration = k;
         [fitness, min_fitness, min_individual, count] = ...
             PSO_evaluate(position, k, N, D, L, var, x_max, fitness, y, ...
                          fs, duration, giventags, Num_func, min_fitness, ...
                          min_individual, count, plotenable, figh, iteration);
         if count == 50
-            disp(['done at ', num2str(k - 50), ' iterations ' ])
-            disp(['fitness at ', num2str(k - 50), ': ', num2str(min_fitness) ])
+            disp([num2str(k - 50), ': ', num2str(min_fitness) ])
             break;
         end
         if k == 50
-            disp(['fitness at 50: ', num2str(min_fitness) ])
+            disp( num2str(min_fitness) )
         end
         [p_best,p_best_fit] = PSO_renewp_best(D,fitness,p_best,N,k,position,p_best_fit,Min_Max_flag);
         g_best=PSO_renewg_best(p_best,p_best_fit,N,Min_Max_flag,Gl_Lo_flag);
