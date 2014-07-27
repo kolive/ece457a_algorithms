@@ -16,7 +16,7 @@ for i=1:N
     individual(i).ri=0;       
     individual(i).ta=0.396;    
     individual(i).gx=10 + ((1000 - 10)*X(i,5));
-    individual(i).xn=1.995262 * X(i,1);
+    individual(i).xn=1.995262 * X(i,6);
 end
 
 parfor i=1:N
