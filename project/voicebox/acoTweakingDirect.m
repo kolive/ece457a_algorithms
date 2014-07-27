@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [fBest, nodes, nchildren, nodevals, nodeCount]=acoTweakingDirect(y, fs, giventags, a, b, evaporateFactor, scalingParameter, numberOfAnts, iterationmax, qgranularity, nodes, nchildren, nodevals, nodeCount)
+function [fBest, nodes, nchildren, nodevals, nodeCount, visited]=acoTweakingDirect(y, fs, giventags, a, b, evaporateFactor, scalingParameter, numberOfAnts, iterationmax, qgranularity, nodes, nchildren, nodevals, nodeCount, visited)
     
     numberOfLevels = 7;
     explorationIterations = 1;
@@ -22,7 +22,7 @@ function [fBest, nodes, nchildren, nodevals, nodeCount]=acoTweakingDirect(y, fs,
         nodeCount = 1;
         nodes = zeros(100,3);
         nodes(nodeCount, :) = [0, runVadBatch2Direct(y, fs, duration,giventags, nest), 1];
-        visited(nodeCount) = -1;
+        visited = ones(1,100) * -1;
         %nodevals = zeros(1,100);
         clearvars nodevals
         nodevals(nodeCount) = nest;
@@ -56,7 +56,7 @@ function [fBest, nodes, nchildren, nodevals, nodeCount]=acoTweakingDirect(y, fs,
     fBest = 1000;
 
     while(iterationcount < iterationmax)
-       iteration = iterationcount %printing out and giving a different name
+       acoiteration = iterationcount %printing out and giving a different name
 
        if(iterationcount > explorationIterations)
            specialB = b;

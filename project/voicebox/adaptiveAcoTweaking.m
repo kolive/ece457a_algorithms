@@ -50,9 +50,9 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
         nodeCount = fread(fileID,[3 3],'double');
         fclose(fileID);
         
-        [fitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount);
+        [fitnesses, nodes, nchildren, nodevals, nodeCount, visited] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount, visited);
     else
-        [fitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, [0,0], 0, 0, 0);
+        [fitnesses, nodes, nchildren, nodevals, nodeCount, visited] = runAcoTweakingBatch(y, fs, giventags, population, gran, [0,0], 0, 0, 0, 0);
     end
     
     %we will have our stopping criteria be a parameter set that is 80%
@@ -72,7 +72,7 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
     solutioncosts = [];
     while(iteration < iterationmax && convergecount > 0 && max(fitnesses) < bestgoal)
         if(mostfit == pbestfitness)
-            convergecount = convergecount - 1;
+            convergecount = convergecount - 1
         else
             convergecount = maxconvergecount;
         end
@@ -88,7 +88,7 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
 
         %generate children
         [children] = generateChildren(selectedpop,a, mrate);
-        [cfitnesses, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, children, gran, nodes, nchildren, nodevals, nodeCount);
+        [cfitnesses, nodes, nchildren, nodevals, nodeCount, visited] = runAcoTweakingBatch(y, fs, giventags, children, gran, nodes, nchildren, nodevals, nodeCount, visited);
         cfitnesses = 1./(1+cfitnesses);
 
         indices = linspace(1, size(population,2), size(population,2));
@@ -117,7 +117,7 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
     end
     
     solutions = [solutions solution];
-    [solutioncost, nodes, nchildren, nodevals, nodeCount] =  runAcoTweakingBatch(y, fs, giventags, solution, gran, nodes, nchildren, nodevals, nodeCount);
+    [solutioncost, nodes, nchildren, nodevals, nodeCount, visited] =  runAcoTweakingBatch(y, fs, giventags, solution, gran, nodes, nchildren, nodevals, nodeCount, visited);
     solutioncosts = [solutioncosts solutioncost];
     
     %serialize the graph
@@ -128,10 +128,13 @@ function [solutioncosts, solutions]=adaptiveAcoTweaking(wavfilename, tagfilename
     fwrite(fileID,nchildren);
     fclose(fileID);
     fileID = fopen(['nodevals_' num2str(gran) '.bin']);
-    fwrite(fileID,nchildren);
+    fwrite(fileID,nodevals);
     fclose(fileID);
     fileID = fopen(['nodeCount_' num2str(gran) '.bin']);
-    fwrite(fileID,nchildren);
+    fwrite(fileID,nodeCount);
+    fclose(fileID);
+    fileID = fopen(['visited_' num2str(gran) '.bin']);
+    fwrite(fileID,visited);
     fclose(fileID);
     
 end
@@ -239,7 +242,7 @@ function [individual] =  generateRandomParameterSet()
     individual.ants = ceil(2 + (18 * rand)); %between 2 and 20
 end
 
-function [batchoptimality, nodes, nchildren, nodevals, nodeCount] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount)
+function [batchoptimality, nodes, nchildren, nodevals, nodeCount, visited] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount, visited)
     batchoptimality = zeros(1, size(population,2));
     %genetictweaking is already running on multiple threads, so no point to
     %parfor it here.
@@ -249,6 +252,6 @@ function [batchoptimality, nodes, nchildren, nodevals, nodeCount] = runAcoTweaki
         evaporationConstant = population(i).eva;
         scalingParameter = population(i).scal;
         numberOfAnts = population(i).ants;
-        [batchoptimality(i), nodes, nchildren, nodevals, nodeCount] = acoTweakingDirect(y, fs, giventags, alpha, beta, evaporationConstant, scalingParameter, numberOfAnts, 40, gran, nodes, nchildren, nodevals, nodeCount);
+        [batchoptimality(i), nodes, nchildren, nodevals, nodeCount, visited] = acoTweakingDirect(y, fs, giventags, alpha, beta, evaporationConstant, scalingParameter, numberOfAnts, 40, gran, nodes, nchildren, nodevals, nodeCount, visited);
     end
 end
