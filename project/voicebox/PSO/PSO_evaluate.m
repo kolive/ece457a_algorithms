@@ -8,7 +8,7 @@ for i=1:N
         temp=position(i,(j-1)*L+1:j*L);
         X(i,j)=PSO_decode(temp,L,x_max) + 0.5; 
     end
-    individual(i).of= floor(5 * X(i,1)) + 1; %I think this needs to be a whole number
+    individual(i).of= floor(10 * X(i,1)) + 1; %I think this needs to be a whole number
     individual(i).pr=0.7;
     individual(i).ts= duration/2 * X(i,2); 
     individual(i).tn= duration/2 * X(i,3);
@@ -16,31 +16,11 @@ for i=1:N
     individual(i).ri=0;       
     individual(i).ta=0.396;    
     individual(i).gx=10 + ((1000 - 10)*X(i,5));
-    individual(i).xn=1.995262 * X(i,6);
+    individual(i).xn=1.995262 * X(i,1);
 end
 
 parfor i=1:N
-%     switch Num_func
-%         case 1
-%             result = sum (X.^2);
-%         case 2
-%             result = sum(abs(X)) + prod(abs(X)) ;
-%         case 3
-%             result = 0 ;
-%             for ii=1:var
-%                 result = result + sum(X(1:ii)).^2;
-%             end
-%         case 4
-%             result = max (abs(X));
-%         case 5
-%             result = 0;
-%             for ii=1:var-1
-%                 result = result + 100*((X(ii+1)-X(ii)^2)^2+(X(ii)-1)^2);
-%             end
-%     end
-    
     tag = vadsohn(y, fs, 'a', individual(i));
-    
     fitness(i,k) = vadOptimality2(tag, giventags);
 end
 

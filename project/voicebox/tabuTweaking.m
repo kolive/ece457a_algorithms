@@ -2,9 +2,7 @@
 %  Author: Kyle
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granularity)
-    iterationmax = 100;
-    
+function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granularity, iterationmax)
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
     
@@ -24,7 +22,7 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
     %TODO: add in end case scenario (for example, get lowest possible optimality). otherwise end when reach iterationmax
     % want lowest optimality value for Tabu Search
     iteration = 1;
-    tabulength = 8;
+    tabulength = granularity;
     [optimality] = runVadBatchDirect(y, fs, duration, giventags, solution);
     tabulist = [solution];
     tabuscores = [optimality];
@@ -33,8 +31,9 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
     globalbestsol = solution;
     neighbors = solution;
     
-    %todo: should probably search old neighbors rather than terminate
-    while(iteration < iterationmax && globalbest > 5 && size(neighbors, 2) ~= 0)
+    backupneighbors = []; %building a list of backup neighbors to search so we never run out of space
+    
+    while(iteration < iterationmax && globalbest > 5)
         tabuage = tabuage - 1;
         %get indices of valid tabus
         tabuindex = find(tabuage);
@@ -45,36 +44,60 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
         tabuscores = tabuscores(tabuindex);
         
         neighbors = generateNeighbors(solution, quant, duration);
-        scores = runVadBatchDirect(y, fs, duration, giventags, neighbors)
+        if(size(neighbors, 2) == 0)
+            %start searching the backup neighborhood if we've run into a
+            %dead end
+            neighbors = backupneighbors;
+            backupneighbors = [];
+        end
+        scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
         
-        %aspiration
-        %with current implementation, this aspiration criteria does
-        %nothing. need to come up with a better one
-        [sval, si] = min(scores);
-        if(ismember(sval,tabuscores) && sval < globalbest)
-            globalbest = sval;
-            globalbestsol = neighbors(si);
-        else
-            %regular tabu-minded selection
-            [nontabuscores, nontabuscoresi] = setdiff(scores, tabuscores);
-            neighbors = neighbors(nontabuscoresi);
-            scores = nontabuscores;
+        
+        %regular tabu-minded selection
+        [nontabuscores, nontabuscoresi] = setdiff(scores, tabuscores);
+        neighbors = neighbors(nontabuscoresi);
+        scores = nontabuscores;
 
-            [sval, si] = min(scores);
-            if(sval < globalbest)
-                globalbest = sval; 
-                globalbestsol = neighbors(si);
-            end
+        %if everything is tabu, pick a random tabu item
+        %aspiration!!!
+        if(size(scores,2) == 0)
+            in = randi(size(tabuscores, 2));
+            nin = linspace(1,size(tabuscores, 2), size(tabuscores, 2));
+            nin = setdiff(nin, in);
+            neighbors = tabulist(in);
+            
+            tabulist = tabulist(nin);
+            tabuscores = tabuscores(nin);
+            tabuage = tabuage(nin);
+            
+            scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
+
+        end
+
+        [sval, si] = min(scores);
+        if(sval < globalbest)
+            globalbest = sval; 
+            globalbestsol = neighbors(si);
         end
         
         
         %add the solution to the tabu list
-        neighbors(si);
         tabulist = [tabulist neighbors(si)];
-        size(tabulist, 2);
         tabuscores = [tabuscores sval];
         tabuage = [tabuage tabulength];
+
+        
         solution = neighbors(si);
+        
+        %save some solutions to look at if we run into a dead end
+        if(size(backupneighbors, 2) < 8)
+            [scores, scoresi] = setdiff(scores, scores(si));
+            neighbors = neighbors(scoresi);
+            [sval2, si2] = min(scores);
+            %take the second best option and save it in the backup
+            %neighbors
+            backupneighbors = [backupneighbors neighbors];
+        end
         
         iteration = iteration + 1
         globalbest
