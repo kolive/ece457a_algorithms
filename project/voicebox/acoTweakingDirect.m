@@ -164,7 +164,7 @@ function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, 
         %nodes(i, :) = [opt, opt, 1]; %normalize the cost to between 1 and 201
         
     end
-    opt = runVadBatchDirect( y, fs, duration, giventags, nodevals(childs) );
+    opt = runVadBatch2Direct( y, fs, duration, giventags, nodevals(childs) );
     nodes(childs, :) = [opt', opt', ones(s,1)]; %normalize the cost to between 1 and 201
 end
 
