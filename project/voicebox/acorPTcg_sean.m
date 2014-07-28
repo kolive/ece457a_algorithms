@@ -1,4 +1,4 @@
-function  result = acorPTcg()
+function  result = acorPTcg_sean()
 %Archive table is initialized by uniform random
 %
 clear all

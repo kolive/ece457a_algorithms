@@ -142,7 +142,7 @@ function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfil
                      %generates child nodes
                      [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                      numberOfSolutions = numberOfSolutions + qgranularity;
-                     if(numberOfSolutions > 750 && fitEff == -1)
+                     if(numberOfSolutions > 1000 && fitEff == -1)
                          fitEff = fBest
                      end
                      visited(next) = 1;
@@ -171,6 +171,7 @@ function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfil
            end
            iterationcount = iterationcount + 1;
         end
+        acoiterationcount = iterationcount
         solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;

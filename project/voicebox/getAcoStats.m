@@ -1,6 +1,6 @@
 function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, graphSol1, graphSol2, table1, table2]=getAcoStats()
     
-    iterationList = 1:10:101;
+    iterationList = [3 11:10:101];
     fitEff = zeros(2,20);
     stagIter = zeros(2,20);
     bestFit = zeros(2,20);

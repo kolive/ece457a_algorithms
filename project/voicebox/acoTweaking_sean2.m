@@ -140,7 +140,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(
                      %generates child nodes
                      [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                      numberOfSolutions = numberOfSolutions + qgranularity;
-                     if(numberOfSolutions > 750 && fitEff == -1)
+                     if(numberOfSolutions > 1000 && fitEff == -1)
                          fitEff = fBest
                      end
                      visited(next) = 1;
@@ -164,8 +164,9 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(
                fBest = topscore
                stagIter = iterationcount;
            end
-           iterationcount = iterationcount + 1;
+           iterationcount = iterationcount + 1
         end
+
         solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;
