@@ -4,7 +4,7 @@
 %  Comments: If you don't know what this does... ask Kyle. Maybe we should
 %  make per-parameter granularity?
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [bestScoreList, solutionNumList]=acoSimple_sean(numberOfAnts, iterationList, qgranularity)
+function [bestScoreList, solutionNumList]=acoSimple_sean2(numberOfAnts, iterationList, qgranularity)
  
     % because of the pheremone update, this algorithm won't work with
     % anything less than 2 ants
