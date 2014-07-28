@@ -9,16 +9,6 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=acoTweaking(wavfilename, tagfilename, qgranularity, figh, animate)
     
-    if(nargin < 3)
-        qgranularity = 10;
-    end
-
-    if(nargin < 4)
-        figh(1) = figure;
-        figh(2) = figure;
-        figh(3) = figure;
-    end
-
     iterationmax = 100;
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;

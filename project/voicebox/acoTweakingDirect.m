@@ -21,7 +21,7 @@ function [fBest, nodes, nchildren, nodevals, nodeCount, visited]=acoTweakingDire
         levelId = 1;
         nodeCount = 1;
         nodes = zeros(100,3);
-        nodes(nodeCount, :) = [0, runVadBatch2Direct(y, fs, duration,giventags, nest), 1];
+        nodes(nodeCount, :) = [0, runVadBatch2Direct(y, fs, duration,giventags, nest), 1]
         visited = ones(1,100) * -1;
         %nodevals = zeros(1,100);
         clearvars nodevals

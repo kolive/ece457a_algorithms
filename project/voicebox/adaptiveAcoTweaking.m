@@ -227,9 +227,6 @@ function [child1, child2] = crossover(p1, p2, a, mrate)
     child1.scal = (p1.scal * a) + (p2.scal * (1-a));
     child2.scal = (p2.scal * a) + (p1.scal * (1-a));
     
-    child1.ants = ceil((p1.ants * a) + (p2.ants * (1-a)));
-    child2.ants = floor((p2.ants * a) + (p1.ants * (1-a)));
-    
     [child1]=mutate(child1, mrate);
     [child2]=mutate(child2, mrate);
 end
@@ -239,7 +236,6 @@ function [individual] =  generateRandomParameterSet()
     individual.beta = min(1, 0.01 + rand); %between 0.1 and 1
     individual.eva = min(0.99, 0.1 + rand); %between 0.1 and 0.99
     individual.scal = (0.5 + (1.5 * rand)); %between 0.5 and 1.5
-    individual.ants = ceil(2 + (18 * rand)); %between 2 and 20
 end
 
 function [batchoptimality, nodes, nchildren, nodevals, nodeCount, visited] = runAcoTweakingBatch(y, fs, giventags, population, gran, nodes, nchildren, nodevals, nodeCount, visited)
@@ -252,6 +248,6 @@ function [batchoptimality, nodes, nchildren, nodevals, nodeCount, visited] = run
         evaporationConstant = population(i).eva;
         scalingParameter = population(i).scal;
         numberOfAnts = population(i).ants;
-        [batchoptimality(i), nodes, nchildren, nodevals, nodeCount, visited] = acoTweakingDirect(y, fs, giventags, alpha, beta, evaporationConstant, scalingParameter, numberOfAnts, 40, gran, nodes, nchildren, nodevals, nodeCount, visited);
+        [batchoptimality(i), nodes, nchildren, nodevals, nodeCount, visited] = acoTweakingDirect(y, fs, giventags, alpha, beta, evaporationConstant, scalingParameter, 10, 40, gran, nodes, nchildren, nodevals, nodeCount, visited);
     end
 end
