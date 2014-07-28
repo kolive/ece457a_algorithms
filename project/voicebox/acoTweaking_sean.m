@@ -70,13 +70,13 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
     % initialization stuff
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.6; % How much you look at the score
-    evaporateFactor = 0.95; % How much the pheremones evaporate per ant
+    b = 1.0; % How much you look at the score
+    evaporateFactor = 0.4; % How much the pheremones evaporate per ant
     topscore = -1;
     worstscore = -1;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
-    scalingParameter = 0.5; % because that's what it was in the notes
+    scalingParameter = 1.3; % because that's what it was in the notes
     paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
     bestAntsIndex = ones(1, numberOfAnts) * -1;
     numberOfSolutions = 1 + qgranularity;
@@ -141,7 +141,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
                      %generates child nodes
                      [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                      numberOfSolutions = numberOfSolutions + qgranularity;
-                     if(numberOfSolutions > 750)
+                     if(numberOfSolutions > 750 && fitEff == -1)
                          fitEff = fBest
                      end
                      visited(next) = 1;
@@ -164,8 +164,8 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
            % Update the pheremones
            nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
            if(fBest > topscore)
-               fBest = topscore;
-               fTop = nodevals(paths(bestAntsIndex(1),end));
+               fBest = topscore
+               %fTop = nodevals(paths(bestAntsIndex(1),end));
                stagIter = iterationcount;
            end
            iterationcount = iterationcount + 1;
@@ -174,7 +174,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
         f = f + 1;
     end
     fBest
-    fTop
+    %fTop
 end
 
 function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)

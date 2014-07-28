@@ -9,10 +9,11 @@ function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, 
     solutionNum = zeros(2,20);
 
     for i=1:20
-        [bestScores_1(i,:), solutionNum(1,i), fitEff(1,i), stagIter(1,i)] = acoTweaking_sean('audio2.wav', 'audio2.tag', 5, iterationList, 6);
-        [bestScores_2(i,:), solutionNum(2,i), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 5, iterationList, 6);
+        statcount = i
+        [bestScores_1(i,:), solutionNum(1,i), fitEff(1,i), stagIter(1,i)] = acoTweaking_sean('audio2.wav', 'audio2.tag', 7, iterationList, 6);
+        [bestScores_2(i,:), solutionNum(2,i), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 8, iterationList, 6);
         bestFit(1,i) = min(bestScores_1(i,:));
-        bestFit(2,i) = min(bestScores_2(i,:));
+        %bestFit(2,i) = min(bestScores_2(i,:));
     end
     
     % the minimum fitness after 1000

@@ -65,7 +65,6 @@ function [bestScoreList, solutionNumList]=acoSimple_sean2(numberOfAnts, iteratio
     b = 1.0; % How much you look at the score
     evaporateFactor = 0.5; % How much the pheremones evaporate per ant
     topscore = -1;
-    worstscore = -1;
     top = ones(1,numberOfLevels) * 100;
     pdeposit = 0.3;
     numberOfSolutions = 1 + qgranularity;
@@ -135,7 +134,6 @@ function [bestScoreList, solutionNumList]=acoSimple_sean2(numberOfAnts, iteratio
            % Find the best and worst score, where the best score is the one
            % with the lowest value
            topscore = min(nodes(ants,2));
-           worstscore = max(nodes(ants,2));
            % Find where the best ants are
            bestAntsIndex = find(nodes(ants,2) == topscore);
            if(fBest > topscore)

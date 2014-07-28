@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
+function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
     numberOfLevels = 7;
     explorationIterations = 1;
@@ -70,15 +70,13 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
     % initialization stuff
     iterationcount = 1;
     a = 1.0; % How much you look at the pheremones
-    b = 0.6; % How much you look at the score
-    evaporateFactor = 0.95; % How much the pheremones evaporate per ant
+    b = 1.0; % How much you look at the score
+    evaporateFactor = 0.90; % How much the pheremones evaporate per ant
     topscore = -1;
-    worstscore = -1;
     %for the pheremone update, we have to keep track of the best and
     %worst function. Only the best ant gets it's function updated
-    scalingParameter = 0.5; % because that's what it was in the notes
-    paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
     bestAntsIndex = ones(1, numberOfAnts) * -1;
+    pdeposit = 0.3;
     numberOfSolutions = 1 + qgranularity;
     % p is the probability array
     p = zeros(1,qgranularity);
@@ -141,13 +139,13 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
                      %generates child nodes
                      [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                      numberOfSolutions = numberOfSolutions + qgranularity;
-                     if(numberOfSolutions > 750)
+                     if(numberOfSolutions > 750 && fitEff == -1)
                          fitEff = fBest
                      end
                      visited(next) = 1;
                    end
                    ants(1, aid) = next;
-                   paths(aid,levelId) = next; % save the path
+                   nodes(curId, 3) = nodes(curId, 3) + pdeposit;
                end     
 
            end
@@ -158,14 +156,11 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
            % Find the best and worst score, where the best score is the one
            % with the lowest value
            topscore = min(nodes(ants,2));
-           worstscore = max(nodes(ants,2));
+
            % Find where the best ants are
            bestAntsIndex = find(nodes(ants,2) == topscore);
-           % Update the pheremones
-           nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
-           if(fBest > topscore)
-               fBest = topscore;
-               fTop = nodevals(paths(bestAntsIndex(1),end));
+          if(fBest > topscore)
+               fBest = topscore
                stagIter = iterationcount;
            end
            iterationcount = iterationcount + 1;
@@ -174,7 +169,6 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
         f = f + 1;
     end
     fBest
-    fTop
 end
 
 function [nodes, nodevals] = generateNodes(parentId, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags)
