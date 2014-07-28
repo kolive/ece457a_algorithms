@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
+function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
     numberOfLevels = 7;
     explorationIterations = 1;
@@ -64,6 +64,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
     
     % data collection stuff
     bestScoreList = zeros(1,size(iterationList,2));
+    solutionList = zeros(1,size(iterationList,2));
     stagIter = -1;
     fitEff = -1;
     
@@ -141,7 +142,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
                      %generates child nodes
                      [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                      numberOfSolutions = numberOfSolutions + qgranularity;
-                     if(numberOfSolutions > 750 && fitEff == -1)
+                     if(numberOfSolutions > 1000 && fitEff == -1)
                          fitEff = fBest
                      end
                      visited(next) = 1;
@@ -170,6 +171,8 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
            end
            iterationcount = iterationcount + 1;
         end
+        acoiterationcount = iterationcount
+        solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;
     end
