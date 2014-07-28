@@ -7,19 +7,8 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [bestScoreList, solutionNumList]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity, figh, animate)
+function [bestScoreList, solutionNum, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
-    if(nargin < 5)
-        qgranularity = 10;
-    end
-
-    if(nargin < 6)
-        figh(1) = figure;
-        figh(2) = figure;
-        figh(3) = figure;
-    end
-    
-    qgranularity
     numberOfLevels = 7;
     explorationIterations = 1;
     firstLevelSize = 5;
