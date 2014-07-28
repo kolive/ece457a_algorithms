@@ -21,7 +21,7 @@ function [solutioncosts, solutions]=adaptiveGeneticTweaking(wavfilename, tagfile
     %but i'll try 50 for now
     % generate initial population
     for i=1:popsize
-        population(i) = generateRandomParameterSet();
+        population(i, :) = generateRandomBinaryParamSet(30);
     end
     
     iteration = 0;
@@ -69,7 +69,7 @@ function [solutioncosts, solutions]=adaptiveGeneticTweaking(wavfilename, tagfile
         cfitnesses = runGeneticTweakingBatch(y, fs, giventags, children);
         cfitnesses = 1./(1+cfitnesses);
 
-        indices = linspace(1, size(population,2), size(population,2));
+        indices = linspace(1, size(population,1), size(population,1));
         eligible = setdiff(indices, rindex);
         for i=1:size(rindex, 2)
             %replace the 50% of population random elements that werent parents
@@ -79,18 +79,20 @@ function [solutioncosts, solutions]=adaptiveGeneticTweaking(wavfilename, tagfile
             %replace the parents
             %this is bad because we kill the strong genes
             %ri = rindex(i);
-            population(ri) = children(i);
+            population(ri, :) = children(i, :);
             fitnesses(ri) = cfitnesses(i);
         end
         
         
-        iteration = iteration + 1
-        [pbestfitness, si] = max(fitnesses)
-        solution = population(si);
+        iteration = iteration + 1;
+        [pbestfitness, si] = max(fitnesses);
+        solution = population(si, :);
         
-        solutions = [solutions solution];
+        solutions = [solutions; solution];
         solutioncosts = [solutioncosts pbestfitness];
         
+        adaptiveiteration = iteration
+        currentbestfitness = pbestfitness
      
     end
     
@@ -106,7 +108,7 @@ function [selectedpop, rindex]=populationSelection(population, fitnesses, count)
     %generate probability of selection by total fitness
     totalfit = sum(fitnesses);
 
-    pindex = linspace(1, size(population,2), size(population,2));
+    pindex = linspace(1, size(population,1), size(population,1));
     scoredpop = [pindex; fitnesses; fitnesses/totalfit];
     
     for i=2:size(scoredpop,2)
@@ -140,7 +142,7 @@ function [selectedpop, rindex]=populationSelection(population, fitnesses, count)
     [sortedlist, sindex] = sort(fitnesses, 2);
     for y=1:count
         i = sindex(size(fitnesses, 2) - y + 1);
-        selectedpop = [selectedpop population(i)];
+        selectedpop = [selectedpop; population(i, :)];
         rindex(y) = i;
     end
 end
@@ -148,71 +150,91 @@ end
 function [pchildren] = generateChildren(population,a, mrate)
     % for each parent, select a random parent and remove both of them from
     % the list of eligible bachelors
-    eligible = linspace(1, size(population,2), size(population,2));
+    eligible = linspace(1, size(population,1), size(population,1));
     pchildren = [];
-    for i=1:(size(population,2)/2)
-        p1 = randi(size(eligible,2));
+    for i=1:(size(population,1)/2)
+        p1 = randi(size(eligible,1));
         eligible = setdiff(eligible, p1);
-        p2 = randi(size(population,2));
+        p2 = randi(size(eligible,2));
         eligible = setdiff(eligible, p2);
 
         % perform crossover and mutation to create two new children
-        [child1, child2] = crossover(population(p1), population(p2),a, mrate);
-        pchildren = [pchildren child1 child2];
+        [child1, child2] = crossover(population(p1, :), population(p2, :),a, mrate);
+        pchildren = [pchildren; child1; child2];
     end
 
 end
 
 %TODO:
 function [child] = mutate(child, mrate)
-    % generate rand number, if number < mrate, mutate the child
-    if (rand < mrate)
-       child.popsize = floor(child.popsize + ((rand - rand) * child.popsize));
-       child.a = child.a + ((rand - rand) * child.a);
-       child.iterationmax = ceil(child.iterationmax + ((rand - rand) * child.iterationmax));
-       child.mrate = child.mrate + ((rand - rand) * child.mrate);
+    if(mrate > rand)
+        for i = 1:180
+            x = rand;
+            if(rand < 0.3)
+                if(child(i) == 1)
+                    child(i) = 0;
+                else
+                    child(i) = 1;
+                end
+            end
+        end
     end
 end
 
 function [child1, child2] = crossover(p1, p2, a, mrate)
     
-    child1.popsize = floor((p1.popsize * a) + (p2.popsize * (1-a)));
-    child2.popsize = ceil((p2.popsize * a) + (p1.popsize * (1-a)));
+    for i=1:180
+        if(rand > a)
+            child1(i) = p2(i);
+            child2(i) = p1(i);
+        else
+            child1(i) = p1(i);
+            child2(i) = p2(i);
+        end
+    end
     
-    child1.a = (p1.a * a) + (p2.a * (1-a));
-    child2.a = (p2.a * a) + (p1.a * (1-a));
-    
-    child1.iterationmax = ceil((p1.iterationmax * a) + (p2.iterationmax * (1-a)));
-    child2.iterationmax = floor((p2.iterationmax * a) + (p1.iterationmax * (1-a)));
-    
-    child1.mrate = (p1.mrate * a) + (p2.mrate * (1-a));
-    child2.mrate = (p2.mrate * a) + (p1.mrate * (1-a));
-    
-    
-    [child1]=mutate(child1, mrate);
-    [child2]=mutate(child2, mrate);
+    child1 = mutate(child1, mrate);
+    child2 = mutate(child2, mrate);
 end
 
 
-function [individual] =  generateRandomParameterSet()
-    individual.popsize = floor(10 + (150 * rand)); %population between 10 and 160
-    individual.a = min(1, 0.01 + rand); %coefficient of crossover between 0.01 and 1
-    individual.iterationmax = ceil(50 + (500 * rand)); %max iterations between 50 and 550
+function [individual] =  decodeBinaryParameterSet(I)
+    %for every param
+    vals = zeros(1,4);
+    for i=1:4
+        %evaluate binary
+        for n=1:30
+            vals(i)=vals(i)+I(i*n)*2^(n-1);
+        end
+    end
     
-    individual.mrate = individual.popsize - ((individual.popsize-8)*rand); 
+    vals=vals/(2^30-1);
+
+    individual.popsize = floor(10 + (120 * vals(1))); %population between 10 and 120
+    individual.a = min(0.9, 0.20 + vals(2)); %crossover rate between 0.2 and 0.9
+    individual.iterationmax = ceil(50 + (500 * vals(3))); %max iterations between 50 and 550
+    
+    individual.mrate = individual.popsize - ((individual.popsize-8)*vals(4)); 
     individual.mrate = 1/individual.mrate; %mrate between 1/8 and 1/individual.popsize
     
 end
 
+function [I]=generateRandomBinaryParamSet(length)
+
+    I = rand(1, length*4) > 0.5;
+    
+end
+
 function [batchoptimality] = runGeneticTweakingBatch(y, fs, giventags, population)
-    batchoptimality = zeros(1, size(population,2));
+    batchoptimality = zeros(1, size(population,1));
     %genetictweaking is already running on multiple threads, so no point to
     %parfor it here.
-    for i=1:size(population,2)
-        iterationmax = population(i).iterationmax;
-        popsize = population(i).popsize;
-        a = population(i).a;
-        mrate = population(i).mrate;
+    for i=1:size(population,1)
+        dpopulation = decodeBinaryParameterSet(population(i, :));
+        iterationmax = dpopulation.iterationmax;
+        popsize = dpopulation.popsize;
+        a = dpopulation.a;
+        mrate = dpopulation.mrate;
         [batchoptimality(i), f] = geneticTweakingDirect(y, fs, giventags, iterationmax, popsize, a, mrate);
     end
 end

@@ -2,7 +2,7 @@
 %compares average runs of both regular and adapted searches
 function [bestsolution, bestscore, adaptedimprovementfactor] = fullGeneticTweakingRun( wavfilename, tagfilename )
     %run adaptive algorithm to determine a good paramater set for GA
-    [paramscore, adaptedparams]=adaptiveGeneticTweaking(wavfilename, tagfilename, 50, 20, 0.5, 1/8)
+    [paramscore, adaptedparams]=adaptiveGeneticTweaking(wavfilename, tagfilename, 50, 20, 0.5, 1/10)
     
     %perform some average runs with default parameter set
     default.popsize = 50;
