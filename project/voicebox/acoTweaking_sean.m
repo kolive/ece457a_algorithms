@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
+function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
     numberOfLevels = 7;
     explorationIterations = 1;
@@ -64,6 +64,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
     
     % data collection stuff
     bestScoreList = zeros(1,size(iterationList,2));
+    solutionList = zeros(1,size(iterationList,2));
     stagIter = -1;
     fitEff = -1;
     
@@ -170,6 +171,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean(w
            end
            iterationcount = iterationcount + 1;
         end
+        solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;
     end

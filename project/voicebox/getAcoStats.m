@@ -7,18 +7,22 @@ function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, 
     bestScores_1 = zeros(20,size(iterationList,2));
     bestScores_2 = zeros(20,size(iterationList,2));
     solutionNum = zeros(2,20);
-
-    for i=1:20
+    solutionList_1 = zeros(20,size(iterationList,2));
+    solutionList_2 = zeros(20,size(iterationList,2));
+    tic;
+    for i=1:5
         statcount = i
-        [bestScores_1(i,:), solutionNum(1,i), fitEff(1,i), stagIter(1,i)] = acoTweaking_sean('audio2.wav', 'audio2.tag', 7, iterationList, 6);
-        [bestScores_2(i,:), solutionNum(2,i), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 8, iterationList, 6);
+        [bestScores_1(i,:), solutionList_1(i,:), fitEff(1,i), stagIter(1,i)] = acoTweaking_sean('audio2.wav', 'audio2.tag', 7, iterationList, 6);
+        [bestScores_2(i,:), solutionList_2(2,i), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 8, iterationList, 6);
+        solutionNum(1,i) = solutionList_1(end);
+        solutionNum(2,i) = solutionList_2(end);
         bestFit(1,i) = min(bestScores_1(i,:));
-        %bestFit(2,i) = min(bestScores_2(i,:));
+        bestFit(2,i) = min(bestScores_2(i,:));
     end
-    
-    % the minimum fitness after 1000
-    minFit1 = min(fitEff(1,:));
-    minFit2 = min(fitEff(2,:));
+    data_collection_time = toc
+    % the minimum fitness after 750
+    minFit1 = mean(fitEff(1,:));
+    minFit2 = mean(fitEff(2,:));
     % the average stagnation fitness
     stagFit1 = mean(bestFit(1,:));
     stagFit2 = mean(bestFit(2,:));
@@ -26,8 +30,8 @@ function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, 
     stag1 = mean(stagIter(1,:));
     stag2 = mean(stagIter(2,:));
     % average number of solutions examined per iteration
-    solNum1 = mean(solutionNum(1,i) ./ 100);
-    solNum2 = mean(solutionNum(2,i) ./ 100);
+    solNum1 = mean(solutionNum(1,:) ./ 100);
+    solNum2 = mean(solutionNum(2,:) ./ 100);
     % for the graph, the average solution (iterations are implied)
     graphSol1 = mean(bestScores_1);
     graphSol2 = mean(bestScores_2);
