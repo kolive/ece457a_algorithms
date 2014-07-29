@@ -112,7 +112,7 @@ function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCoun
                  %generates child nodes
                  [nodes, nodevals] = generateNodes(next, levelId, nodes, nchildren, nodevals, y, fs, duration, giventags);
                  numberOfSolutions = numberOfSolutions + qgranularity;
-                 if(numberOfSolutions > 1000 && fitEff == -1)
+                 if(numberOfSolutions > 500 && fitEff == -1)
                      fitEff = fBest
                      %return
                  end
