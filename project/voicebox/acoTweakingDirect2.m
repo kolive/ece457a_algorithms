@@ -7,7 +7,7 @@
 %  Example usage: 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCount, visited]=acoTweakingDirect(y, fs, giventags, a, b, evaporateFactor, scalingParameter, numberOfAnts, iterationmax, qgranularity, nodes, nchildren, nodevals, nodeCount, visited)
+function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCount, visited]=acoTweakingDirect2(y, fs, giventags, a, b, evaporateFactor, pdeposit, numberOfAnts, iterationmax, qgranularity, nodes, nchildren, nodevals, nodeCount, visited)
     
     numberOfLevels = 7;
     explorationIterations = 1;
@@ -49,12 +49,7 @@ function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCoun
     % initialization stuff
     iterationcount = 1;
     topscore = -1;
-    worstscore = -1;
     ants = ones(1, numberOfAnts);
-    %for the pheremone update, we have to keep track of the best and
-    %worst function. Only the best ant gets it's function updated
-    paths = ones(numberOfAnts, numberOfLevels) * -1; % each row is an ant, each column is a level
-    bestAntsIndex = ones(1, numberOfAnts) * -1;
     % p is the probability array
     p = zeros(1,qgranularity);
     fBest = 1000;
@@ -119,7 +114,7 @@ function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCoun
                  visited(next) = 1;
                end
                ants(1, aid) = next;
-               paths(aid,levelId) = next; % save the path
+               nodes(curId, 3) = nodes(curId, 3) + pdeposit;
            end     
 
        end
@@ -130,11 +125,6 @@ function [fBest, numberOfSolutions, fitEff, nodes, nchildren, nodevals, nodeCoun
        % Find the best and worst score, where the best score is the one
        % with the lowest value
        topscore = min(nodes(ants,2));
-       worstscore = max(nodes(ants,2));
-       % Find where the best ants are
-       bestAntsIndex = find(nodes(ants,2) == topscore);
-       % Update the pheremones
-       nodes(paths(bestAntsIndex,:),3) = nodes(paths(bestAntsIndex,:),3) + scalingParameter * worstscore / topscore;
        if(fBest > topscore)
            fBest = topscore;
        end
