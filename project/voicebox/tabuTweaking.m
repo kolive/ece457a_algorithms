@@ -1,7 +1,24 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Author: Kyle
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
+%  Author: Kyle Olive
+%  
+%	The tabu tweaking algorithm for VADSohn takes the following parameters:
+%	wavfilename - The WAV file name used for tuning
+%	tagfilename - The tag file name used for tuning as the ground truth
+%	granularity - the distance between quantized neighbors
+%	iterationmax - the maximum number of iterations to run the genetic 
+%		algorithm
+%	adaptivecount - the number of iterations between adaptive tabu list length
+%		modifications. A value of -1 indicates a non-adaptive execution
+%	stopcriteria - a value that can be passed to limit the number of fitness 
+%		evaluations. Pass popsize*iterationmax to prevent early termination due
+%		to this criteria.
+%
+%	It then runs a tabu or adaptive tabu algorithm, and returns the optimality
+%	of the best solution found and the solutionitself, as discussed in the 
+%	report submitted with this code.
+%	[solutioncost, solution]
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granularity, iterationmax, adaptivecount, stoppingcriteria)
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;

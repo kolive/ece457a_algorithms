@@ -1,12 +1,29 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Author: Kyle Olive
-%  Date: Sometime after the fall of Rome
-%  Comments: If you don't know what this does... ask Kyle
+%  
+%	The genetic tweaking algorithm for VADSohn takes the following parameters:
+%	y - The WAV file data matrix
+%	fs - the sampling frequency of the WAV file being analyzd
+%	giventags - the matrix representing the ground truth flags
+%	iterationmax - the maximum number of iterations to run the genetic 
+%		algorithm
+%	popsize - the size of the population in the genetic algorithm
+%	a - alpha, the crossover factor, value between 0 and 1, dictates the 
+%		probability of uniform crossover
+%	mrate - value between 0 and 1, dictates the probability of child mutation 
+%		after crossover
+%	adaptiverate - either -1 or between 0 and 1, if -1 algorithm runs in normal 
+%		mode, if between 0 and 1, the adaptive rate is as the linear mrate 
+%		modifier
+%	stopcriteria - a value that can be passed to limit the number of fitness 
+%		evaluations. Pass popsize*iterationmax to prevent early termination due
+%		to this criteria.
 %
-%   TODOS: Right now, this does stuff, but never seems to be able to
-%   generate a child better than in the original random population.
+%	It then runs a genetic or adaptive genetic algorithm, and returns the optimality
+%	of the best solution found and the solutionitself, as discussed in the 
+%	report submitted with this code. It also returns the iterations before returning
+%	[solutioncost, iterationcount, solution]
 %
-%   Some work needs to be done to find out why
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solutioncost, itcounts, solution]=geneticTweakingDirect(y, fs, giventags, iterationmax, popsize, a, mrate, adaptiverate, stopcriteria)
     totalanalysedpoints = 0;
