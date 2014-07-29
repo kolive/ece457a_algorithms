@@ -80,14 +80,14 @@ for j = 1:jmax
             N = K;
         end
     else
-        N = 20; % N is the number of the particles
-        K = 50; %K is the number of iteration
+        N = 40; % N is the number of the particles
+        K = 25; %K is the number of iteration
     end
     [D,L,var,w_max,w_min,c1,c2,position,p_best,g_best,fitness,p_best_fit,...
         Num_func,Min_Max_flag,Gl_Lo_flag] = PSO_initialize(N,K);
 
     [v_max,x_max,velocity,] = PSO_range_func(Num_func,N,D) ;
-    for k=1:(10*K)
+    for k=1:K
         %disp([' Run ' , num2str(k) ])
         w = w_max+(((w_min-w_max)*(min(k, 50)-1))/(K-1));
         iteration = k;

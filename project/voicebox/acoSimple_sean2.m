@@ -123,7 +123,7 @@ function [bestScoreList, solutionNumList]=acoSimple_sean2(numberOfAnts, iteratio
                      visited(next) = 1;
                    end
                    ants(1, aid) = next;
-                   nodes(curId, 3) = nodes(curId, 3) + pdeposit; %todo play with pheromone deposit levels
+                   nodes(curId, 3) = nodes(curId, 3) + pdeposit;
                end
 
            end
