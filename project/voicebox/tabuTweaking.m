@@ -65,10 +65,16 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
         
        neighbors = generateNeighbors(solution, quant, duration);
         if(size(neighbors, 2) == 0)
-            %start searching the backup neighborhood if we've run into a
-            %dead end
-            neighbors = backupneighbors;
-            backupneighbors = [];
+            if(adaptivecount ~= -1)
+                %start searching the backup neighborhood if we've run into a
+                %dead end
+                neighbors = backupneighbors;
+                backupneighbors = [];
+            else
+                %if this is not adaptive Tabu, terminate at this point
+                iteration = iterationmax + 99999;
+                continue;
+            end
         end
         numevals = numevals + size(neighbors,2);
         scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
