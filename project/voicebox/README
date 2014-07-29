@@ -2,3 +2,13 @@ ACO run
 =======
 
 Run `getAcoStats()`. Read the file for insights on how to call the two ACO approaches and the various statistics they return.
+
+
+
+
+PSO run
+=======
+
+Simply calling PSO_main with no arguments will use default arguments and generate a graph of results.
+You may also pass two parameters, one specifies iteration count, the other number of particles.
+All other configuration is done in PSO_initialize.
