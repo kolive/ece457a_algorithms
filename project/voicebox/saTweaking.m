@@ -1,8 +1,21 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %  Author: Owen Wang
+
+% example running: [sol_cost, best_sol, all_sol_costs, total_iter] = saTweaking('audio2.wav', 'audio2.tag', 50);
+
+% Inputs:
+% wavfilename is the name of the wav file used in voice detection
+% tagfilename is the name of the accompanying tag file
+% granularity is the granularity of solutions explored. Larger means more granularity
+
+% Outputs:
+% sol_cost is the VAD error % of the best solution found
+% best_sol is the VAD parameters of the best solution
+% all_sol_costs is a matrix of the best solution found per iteration
+% total_iter is the count of how many iterations were performed
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [sol_cost, best_sol, all_sol_costs, all_sols]=saTweaking(wavfilename, tagfilename, granularity)
+function [sol_cost, best_sol, all_sol_costs, total_iter]=saTweaking(wavfilename, tagfilename, granularity)
     [y, fs] = wavread(wavfilename);
     duration = size(y,1)/fs;
 
@@ -80,11 +93,9 @@ function [sol_cost, best_sol, all_sol_costs, all_sols]=saTweaking(wavfilename, t
           iter = iter + 1;
           total_iter = total_iter + 1;
 
-          % stop if more than 1000 iterations
-          if (total_iter >= 1000)
-            disp(strcat('Iteration count: ', num2str(total_iter)));
-            disp(strcat('Best solution: ', num2str(sol_cost)));
-            return;
+          % display at 1000 iterations
+          if (total_iter == 1000)
+            disp(strcat('Best solution at 1000: ', num2str(sol_cost)));
           end
 
           if (iter >= max_iter) | (accept >= max_accept)
@@ -101,7 +112,7 @@ function [sol_cost, best_sol, all_sol_costs, all_sols]=saTweaking(wavfilename, t
 
           % gathering stats
           all_sols = [all_sols sol];
-          all_sol_costs = [all_sol_costs cost_new];
+          all_sol_costs = [all_sol_costs cost_old];
 
           % delta_f = fn+1(xn+1) - fn(xn)
           delta_cost = cost_new - cost_old;
