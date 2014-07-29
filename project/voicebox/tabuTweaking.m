@@ -90,19 +90,24 @@ function [solutioncost, solution]=tabuTweaking(wavfilename, tagfilename, granula
         neighbors = neighbors(nontabuscoresi);
         scores = nontabuscores;
 
-        %if everything is tabu, pick a random tabu item
-        %aspiration!!!
+        %if everything is tabu, pick a random tabu item or terminate
         if(size(scores,2) == 0)
-            in = randi(size(tabuscores, 2));
-            nin = linspace(1,size(tabuscores, 2), size(tabuscores, 2));
-            nin = setdiff(nin, in);
-            neighbors = tabulist(in);
-            
-            tabulist = tabulist(nin);
-            tabuscores = tabuscores(nin);
-            tabuage = tabuage(nin);
-            
-            scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
+            if(adaptivecount ~= -1)
+                in = randi(size(tabuscores, 2));
+                nin = linspace(1,size(tabuscores, 2), size(tabuscores, 2));
+                nin = setdiff(nin, in);
+                neighbors = tabulist(in);
+
+                tabulist = tabulist(nin);
+                tabuscores = tabuscores(nin);
+                tabuage = tabuage(nin);
+
+                scores = runVadBatchDirect(y, fs, duration, giventags, neighbors);
+            else
+                %if this is not adaptive Tabu, terminate at this point
+                iteration = iterationmax + 99999;
+                continue;
+            end
 
         end
 

@@ -1,19 +1,8 @@
-function [ results, average, bestsol ] = averageTabuTweaking(wavfilename, tagfilename, granularity, iterationmax, adaptivecount, stoppingcriteria, count)
-   [y, fs] = wavread(wavfilename);
-        
-    %read in the given tags to do a comparison
-    giventags = dlmread(tagfilename);    
-    results = [];
-    duration = size(y,1)/fs;
-    results = [];
-  
-    
-    for i=1:count
-       [sc, sol] = tabuTweaking(wavfilename, tagfilename, granularity, iterationmax, adaptivecount, stoppingcriteria);
-       results = [results runVadBatchDirect(y, fs, duration, giventags, sol)];
-       if(results(i) == min(results)) bestsol = sol;
+function [ resultsnorm, resultsadapt ] = averageTabuTweaking()
+    for i=1:20
+       resultsnorm(i) = tabuTweaking('audio2.wav', 'audio2.tag', 120, 200, -1, 1000)
+       resultsadapt(i) = tabuTweaking('audio2.wav', 'audio2.tag', 120, 200, 2, 1000)
     end
     
-    average = mean(results); 
 
 end

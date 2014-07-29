@@ -8,7 +8,7 @@
 %
 %   Some work needs to be done to find out why
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-function [solutioncost, solution]=geneticTweakingDirect(y, fs, giventags, iterationmax, popsize, a, mrate, adaptiverate, stopcriteria)
+function [solutioncost, itcounts, solution]=geneticTweakingDirect(y, fs, giventags, iterationmax, popsize, a, mrate, adaptiverate, stopcriteria)
     totalanalysedpoints = 0;
 
     duration = size(y,1)/fs;
@@ -53,7 +53,7 @@ function [solutioncost, solution]=geneticTweakingDirect(y, fs, giventags, iterat
     pp.ta=0.396;    % Time const for smoothing SNR estimate = -tinc/log(0.98) from [2]
     pp.gx=1000;     % maximum posterior SNR = 30dB
     pp.xn=0;        % minimum prior SNR = -Inf dB
-    bestgoal = 0.01*runVadBatchDirect(y, fs, duration, giventags, pp); %base goal on 80% better than default
+    bestgoal = 0.01*runVadBatchDirect(y, fs, duration, giventags, pp); %base goal on 99% better than default
     bestgoal = (1/(1+bestgoal));
     fitnesses = 1./(1+fitnesses);
     
@@ -65,7 +65,8 @@ function [solutioncost, solution]=geneticTweakingDirect(y, fs, giventags, iterat
     end
     
     mostfit = 0;
-    while(iteration < iterationmax && max(fitnesses) < bestgoal && convergecount > 0 && totalanalysedpoints < stopcriteria) 
+    uniquefitnesses = unique(fitnesses);
+    while(iteration < iterationmax && max(fitnesses) < bestgoal && convergecount > 0 && totalanalysedpoints < stopcriteria && size(uniquefitnesses,2) >= 3) 
         if(mostfit == pbestfitness)
             convergecount = convergecount - 1;
         else
@@ -133,6 +134,7 @@ function [solutioncost, solution]=geneticTweakingDirect(y, fs, giventags, iterat
     totalanalysedpoints
     %change to run vad direct for graph
     [solutioncost] =  evalPopulation(solution, y, fs, giventags, duration);
+    itcounts = iteration;
     solution = decodeBinaryIndividual(solution, duration);
 end
 
