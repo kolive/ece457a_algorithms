@@ -58,7 +58,7 @@ function [sol_cost, best_sol, all_sol_costs, total_iter]=saTweaking(wavfilename,
     accept = 0;
     rej = 0;
     recent = 0;
-    sols = sol;
+    sol_old = sol;
     all_sols = [];
     all_sol_costs = [];
     cost_diff = init_cost_diff;
@@ -69,7 +69,7 @@ function [sol_cost, best_sol, all_sol_costs, total_iter]=saTweaking(wavfilename,
 
     while ((rej <= max_rej) & (T > T_min))
         % xn+1 = xn + randn
-        sols = generateNeighbors(sol, quant, duration, T);
+        sols = generateNeighbors(sol_old, quant, duration, T);
 
         %fn+1(xn+1)
         for i=1:size(sols,2)
@@ -125,12 +125,14 @@ function [sol_cost, best_sol, all_sol_costs, total_iter]=saTweaking(wavfilename,
             end
 
             cost_old = cost_new;
+            sol_old = sol;
             accept = accept + 1;
             rej = 0;
             recent = 0;
           % accept if p = exp(-delta_f/(boltzmann's constant * T)) > r
           elseif (delta_cost < cost_diff & exp(-delta_cost / (k * T)) > rand)
             cost_old = cost_new;
+            sol_old = sol;
             accept = accept + 1;
             break;
           else
@@ -163,13 +165,13 @@ function [neighbors] = generateNeighbors(node, quant, duration, T)
     neighbors = [];
     if(node.of + (quant.of * T) < 5)
         nn = node;
-        nn.of = nn.of + (quant.of * T) - rand;
+        nn.of = nn.of + quant.of;
         neighbors = [neighbors nn];
     end
 
     if(node.of - (quant.of * T) >= 2)
         nn = node;
-        nn.of = nn.of - (quant.of * T) - rand;
+        nn.of = nn.of - quant.of;
         neighbors = [neighbors nn];
     end
 
