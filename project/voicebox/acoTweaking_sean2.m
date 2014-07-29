@@ -1,12 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Author: Kyle Olive
-%  Date: Sometime after the fall of Rome
-%  Comments: If you don't know what this does... ask Kyle. Maybe we should
-%  make per-parameter granularity? Change the pheremone deposit (only best ant?) to
-%  what's been shown in the slides.
-%  Example usage: 
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
     numberOfLevels = 7;
@@ -25,9 +16,6 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(
     %variable
     
     %quantize the possible values of each variable
-    
-    %make the edge cost the difference in optimality between the previous
-    %node and this one
     
     %what should the matrix look like?
     % initially all -1
@@ -142,6 +130,7 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(
                      numberOfSolutions = numberOfSolutions + qgranularity;
                      if(numberOfSolutions > 1000 && fitEff == -1)
                          fitEff = fBest
+                         %return
                      end
                      visited(next) = 1;
                    end
@@ -164,12 +153,13 @@ function [bestScoreList, numberOfSolutions, fitEff, stagIter]=acoTweaking_sean2(
                fBest = topscore
                stagIter = iterationcount;
            end
-           iterationcount = iterationcount + 1
+           iterationcount = iterationcount + 1;
         end
-
+        acoiteration = iterationcount
         solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;
+        %return
     end
     fBest
 end

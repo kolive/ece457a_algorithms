@@ -1,6 +1,6 @@
 function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, graphSol1, graphSol2, table1, table2]=getAcoStats()
     
-    iterationList = [3 11:10:101];
+    iterationList = [2 11:10:101];
     fitEff = zeros(2,20);
     stagIter = zeros(2,20);
     bestFit = zeros(2,20);
@@ -10,10 +10,10 @@ function [minFit1, minFit2, stag1, stag2, stagFit1, stagFit2, solNum1, solNum2, 
     solutionList_1 = zeros(20,size(iterationList,2));
     solutionList_2 = zeros(20,size(iterationList,2));
     tic;
-    for i=1:10
+    for i=1:20
         statcount = i
         [bestScores_1(i,:), solutionList_1(i,:), fitEff(1,i), stagIter(1,i)] = acoTweaking_sean('audio2.wav', 'audio2.tag', 7, iterationList, 6);
-        [bestScores_2(i,:), solutionList_2(2,i), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 8, iterationList, 6);
+        [bestScores_2(i,:), solutionList_2(i,:), fitEff(2,i), stagIter(2,i)] = acoTweaking_sean2('audio2.wav', 'audio2.tag', 8, iterationList, 6);
         solutionNum(1,i) = solutionList_1(end);
         solutionNum(2,i) = solutionList_2(end);
         bestFit(1,i) = min(bestScores_1(i,:));

@@ -1,12 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%  Author: Kyle Olive
-%  Date: Sometime after the fall of Rome
-%  Comments: If you don't know what this does... ask Kyle. Maybe we should
-%  make per-parameter granularity? Change the pheremone deposit (only best ant?) to
-%  what's been shown in the slides.
-%  Example usage: 
-%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfilename, tagfilename, numberOfAnts, iterationList, qgranularity)
     
     numberOfLevels = 7;
@@ -26,8 +17,6 @@ function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfil
     
     %quantize the possible values of each variable
     
-    %make the edge cost the difference in optimality between the previous
-    %node and this one
     
     %what should the matrix look like?
     % initially all -1
@@ -144,6 +133,7 @@ function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfil
                      numberOfSolutions = numberOfSolutions + qgranularity;
                      if(numberOfSolutions > 1000 && fitEff == -1)
                          fitEff = fBest
+                         %return
                      end
                      visited(next) = 1;
                    end
@@ -175,6 +165,7 @@ function [bestScoreList, solutionList, fitEff, stagIter]=acoTweaking_sean(wavfil
         solutionList(f) = numberOfSolutions;
         bestScoreList(f) = fBest;
         f = f + 1;
+        return
     end
     fBest
     %fTop

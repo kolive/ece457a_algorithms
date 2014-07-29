@@ -1,4 +1,4 @@
-function [a, b] = sa_run(runs)
+function [a, b, p] = sa_run(runs)
   agg_sol_cost = 0;
   agg_best_sol = 100;
   agg_sol_costs = [];
@@ -15,7 +15,8 @@ function [a, b] = sa_run(runs)
     agg_sol_costs = [agg_sol_costs; all_sol_costs(1:500)];
   end
 
-  a = agg_sol_cost;
+  a = agg_sol_cost / runs;
   b = agg_best_sol;
-  plot(sum(agg_sol_costs) / runs);
+  p = sum(agg_sol_costs) / runs;
+  plot(p);
 end
