@@ -1,11 +1,14 @@
 ECE457a - Co-operative and Adaptive Algorithms
 ==============================================
 
+Assignment Code
+----------------------------------------------------------------------------------------------------
+
 This repository is a collection of some of the algorithms learned about in ece457a. Note that these algorithms are not all commented, and may not all even work properly. 
 
 I would ask that if you're taking the course or a similar course on the subject matter to only use my implementations as a reference, for two reasons. 
 
-1. I can't speak for the integrity of all the implementations, as these are mostly off-the-cuff implementations to test my understanding 
+1. I can't speak for the integrity of all the implementations, as these are mostly off-the-cuff implementations to test my understanding. I wouldn't want you to fail because I messed up.
 2. Academic Integrity and stuff.
 
 Otherwise, go crazy.
@@ -20,6 +23,10 @@ Note that the error rate is only as accurate as the number of samples in the giv
 These algorithms can be found as modifications to the voicebox library (http://www.ee.ic.ac.uk/hp/staff/dmb/voicebox/voicebox.html), under project/voicebox.
 
 Also note that Tabu and ACO would probably work better with random neighbor generation using Gaussian White noise as the neighborhood operator.
+
+If you are using the project code for your own research or project, please reference the work. As well, it would be cool to know if other people find this useful/interesting, so dropping one of us an email would be sweet. 
+
+
 
 Contributors 
 ------------
